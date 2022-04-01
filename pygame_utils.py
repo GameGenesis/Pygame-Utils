@@ -1,14 +1,14 @@
 from abc import abstractmethod
 import gc
 import sys
-from typing import Callable
+from typing import Any, Callable, Optional
 
 import pygame
 from pygame.sprite import Sprite
 from pygame.math import Vector2
 
 class EventManager:
-    def __init__(self, call_backs:Callable | list[Callable]=None) -> None:
+    def __init__(self, call_backs: Optional[Callable] | Optional[list[Callable]]=None) -> None:
         if call_backs:
             if type(call_backs) == list:
                 self.funcs = call_backs
@@ -17,7 +17,7 @@ class EventManager:
         else:
             self.funcs = []
 
-    def handle_events(self):
+    def handle_events(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -32,7 +32,7 @@ class ButtonManager:
             if isinstance(obj, Button):
                 self.buttons.append(obj)
 
-    def handle_button_events(self, event, *args):
+    def handle_button_events(self, event: pygame.event.Event, *args) -> None:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button != 1:
                 return
@@ -51,11 +51,15 @@ class ButtonManager:
 
 
 class Button:
-    def __init__(self, on_click=None, position=Vector2(0, 0), size=Vector2(150, 75), color=(255, 255, 255), hover_color=(220, 220, 220), pressed_color=(185, 185, 185), disabled_color=(165, 165, 165), border_radius=0, disabled=False, label=None, label_alignment="center"):
+    def __init__(self, on_click:Optional[Callable]=None, 
+    position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 75), 
+    color: tuple[int, int, int]=(255, 255, 255), hover_color: tuple[int, int, int]=(220, 220, 220), 
+    pressed_color: tuple[int, int, int]=(185, 185, 185), disabled_color: tuple[int, int, int]=(165, 165, 165), 
+    border_radius: int=0, disabled: bool=False, label: "Label"=None, label_alignment: str="center") -> None:
         self.func = on_click
         self.position = position
         self.size = size
-        self.rect = pygame.rect.Rect(position, size)
+        self.rect = pygame.Rect(position, size)
         self.current_color = color
         self.color = color
         self.hover_color = hover_color
@@ -70,7 +74,7 @@ class Button:
         if self.label:
             self.label._render()
 
-    def set_disabled(self, disabled):
+    def set_disabled(self, disabled: bool=True):
         self.disabled = disabled
         self.current_color = self.disabled_color
 
@@ -82,11 +86,11 @@ class Button:
         label_pos = (self.position.x + self.label.position[0] + label_offset[0], self.position.y + self.label.position[1] + label_offset[1])
         self.label.set_position(label_pos, anchor="center")
 
-    def set_text(self, text):
+    def set_text(self, text: str | Any):
         if self.label:
             self.label.set_text(text)
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         self.mouseover()
         pygame.draw.rect(surface, self.current_color, self.rect, border_radius=self.border_radius)
         if self.label:
@@ -113,7 +117,8 @@ class Button:
 
 
 class Label(Sprite):
-    def __init__(self, text, color=(255, 255, 255), font_name=None, font_size=28, position=(0, 0), anchor="topleft"):
+    def __init__(self, text: str | Any, color: tuple[int, int, int]=(255, 255, 255), 
+    font_name: str=None, font_size: int=28, position: tuple[int, int]=(0, 0), anchor: str="topleft"):
         super().__init__()
         self.font = pygame.font.Font(font_name, font_size)
         self.text = str(text)
@@ -126,26 +131,26 @@ class Label(Sprite):
         self.image = self.font.render(self.text, True, self.color)
         self.rect = self.image.get_rect(**{self.anchor: self.position})
 
-    def clip(self, rect):
+    def clip(self, rect: pygame.Rect):
         self.image = self.image.subsurface(rect)
         self.rect = self.image.get_rect(**{self.anchor: self.position})
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         surface.blit(self.image, self.rect)
 
-    def set_text(self, text):
+    def set_text(self, text: str):
         self.text = str(text)
         self._render()
 
-    def set_font(self, font_name, font_size):
+    def set_font(self, font_name: str, font_size: int):
         self.font = pygame.font.Font(font_name, font_size)
         self._render()
 
-    def set_color(self, color):
+    def set_color(self, color: tuple[int, int, int]):
         self.color = color
         self._render()
 
-    def set_position(self, position, anchor=None):
+    def set_position(self, position: tuple[int, int], anchor: str=None):
         self.position = position
         if anchor:
             self.anchor = anchor
@@ -154,7 +159,7 @@ class Label(Sprite):
 
 
 class Shape(object):
-    def __init__(self, pos: Vector2=Vector2(0, 0), color: tuple[int]=(0, 0, 0)) -> None:
+    def __init__(self, pos: Vector2=Vector2(0, 0), color: tuple[int, int, int]=(0, 0, 0)) -> None:
         self.pos = pos
         self.color = color
 
@@ -168,7 +173,7 @@ class Shape(object):
 
 
 class Square(Shape):
-    def __init__(self, pos: Vector2=Vector2(0, 0), color: tuple[int]=(0, 0, 0), size: Vector2=Vector2(100, 100)) -> None:
+    def __init__(self, pos: Vector2=Vector2(0, 0), color: tuple[int, int, int]=(0, 0, 0), size: Vector2=Vector2(100, 100)) -> None:
         super().__init__(pos, color)
         self.size = size
         self.rect = pygame.Rect(pos, size)
