@@ -5,6 +5,20 @@ import pygame
 from pygame.sprite import Sprite
 from pygame.math import Vector2
 
+class ButtonManager:
+    def __init__(self) -> None:
+        self.buttons = []
+        for obj in gc.get_objects():
+            if isinstance(obj, Button):
+                self.buttons.append(obj)
+
+    def handle_button_events(self, event, *args):
+        if event.type == pygame.MOUSEBUTTONUP:
+            pos = pygame.mouse.get_pos()
+            for button in self.buttons:
+                if button.rect.collidepoint(pos):
+                    button.call_back(*args)
+
 
 class Button:
     def __init__(self, on_click=None, position=Vector2(0, 0), size=Vector2(150, 75), color=(255, 255, 255), hover_color=(200, 200, 200), border_radius=0, label=None, label_alignment="center"):
