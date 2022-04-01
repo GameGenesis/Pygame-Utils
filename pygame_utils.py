@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 import gc
 import sys
 from turtle import onclick, pos
@@ -30,6 +30,24 @@ class EventManager:
             self.button_manager.handle_button_events(event)
 
 
+class Canvas:
+    def __init__(self, main_surface: pygame.Surface) -> None:
+        self.main_surface = main_surface
+        self.graphic_elements = []
+        for obj in gc.get_objects():
+            if isinstance(obj, Graphic):
+                self.graphic_elements.append(obj)
+
+    def draw(self) -> None:
+        for graphic in self.graphic_elements:
+            graphic.draw(self.main_surface)
+
+class Graphic(ABC):
+    @abstractmethod
+    def draw(self, surface: pygame.Surface):
+        ...
+
+
 class ButtonManager:
     def __init__(self) -> None:
         self.buttons = []
@@ -55,11 +73,11 @@ class ButtonManager:
                     button.call_back(*args)
 
 
-class Button:
-    def __init__(self, on_click:Optional[Callable]=None, 
-    position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 75), 
-    color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220), 
-    pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165), 
+class Button(Graphic):
+    def __init__(self, on_click:Optional[Callable]=None,
+    position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 75),
+    color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220),
+    pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165),
     border_radius: int=0, disabled: bool=False, label: "Label"=None, label_alignment: str="center") -> None:
         self.func = on_click
         self.position = position
@@ -86,7 +104,7 @@ class Button:
     def set_label_pos(self):
         if not self.label:
             return
-        
+
         if self.label_alignment == "center":
             label_offset = (self.size.x / 2, self.size.y / 2)
         else:
@@ -125,18 +143,18 @@ class Button:
 
 
 class CheckBox(Button):
-    def __init__(self, on_click:Optional[Callable]=None, 
-    position: Vector2=Vector2(0, 0), size: Vector2=Vector2(50, 50), 
-    color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220), 
-    pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165), 
-    tick_color: pygame.Color | tuple[int, int, int]=(55, 55, 55), is_on: bool=False, 
+    def __init__(self, on_click:Optional[Callable]=None,
+    position: Vector2=Vector2(0, 0), size: Vector2=Vector2(50, 50),
+    color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220),
+    pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165),
+    tick_color: pygame.Color | tuple[int, int, int]=(55, 55, 55), is_on: bool=False,
     border_radius: int=0, disabled: bool=False, label_alignment: str="center") -> None:
-        super().__init__(on_click, position, size, color, hover_color, pressed_color, disabled_color, 
+        super().__init__(on_click, position, size, color, hover_color, pressed_color, disabled_color,
         border_radius, disabled, None, label_alignment)
         self.tick_color = tick_color
         self.is_on = is_on
         self.tick_rect = pygame.Rect(Vector2(position.x + size.x/4, position.y + size.y/4), Vector2(size.x / 2, size.y / 2))
-    
+
     def draw(self, surface: pygame.Surface):
         super().draw(surface)
         if self.is_on:
@@ -147,8 +165,8 @@ class CheckBox(Button):
         super().call_back(self.is_on, *args)
 
 
-class Label(Sprite):
-    def __init__(self, text: str | Any, color: pygame.Color | tuple[int, int, int]=(255, 255, 255), 
+class Label(Sprite, Graphic):
+    def __init__(self, text: str | Any, color: pygame.Color | tuple[int, int, int]=(255, 255, 255),
     font_name: str=None, font_size: int=28, position: tuple[int, int]=(0, 0), anchor: str="topleft"):
         super().__init__()
         self.font = pygame.font.Font(font_name, font_size)
@@ -204,7 +222,7 @@ class Shape(object):
 
 
 class Square(Shape):
-    def __init__(self, pos: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0), 
+    def __init__(self, pos: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0),
     size: Vector2=Vector2(100, 100)) -> None:
         super().__init__(pos, color)
         self.size = size

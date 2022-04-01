@@ -3,7 +3,7 @@ import math
 import pygame
 from pygame.math import Vector2
 
-from pygame_utils import ButtonManager, Button, CheckBox, EventManager, Label, Square, Circle, Color
+from pygame_utils import Button, Canvas, CheckBox, EventManager, Label, Square, Circle, Color
 
 class CollisonMath:
     @staticmethod
@@ -66,20 +66,14 @@ def main():
     check_box = CheckBox(position=Vector2(25, surface_size[1] - 75), on_click=toggle_color)
 
     event_manager = EventManager(toggle_velocity)
+    canvas = Canvas(main_surface)
 
     #-----------------------------Main Game Loop---------------------------------------------#
     while True:
-
         event_manager.handle_events()
 
         #-----------------------------Game Logic---------------------------------------------#
         # Update your game objects and data structures here...
-
-
-        #-----------------------------Drawing Everything-------------------------------------#
-        # We draw everything from scratch on each frame.
-        # So first fill everything with the background color
-        main_surface.fill((0, 200, 255))
 
         # Current frame ticks in ms
         t = pygame.time.get_ticks()
@@ -95,12 +89,17 @@ def main():
             if circle.pos.y + circle.radius/2 >= main_surface.get_height() or circle.pos.y - circle.radius/2 <= 0:
                 current_velocity[1] *= -1
 
+        #-----------------------------Drawing Everything-------------------------------------#
+        # We draw everything from scratch on each frame.
+        # So first fill everything with the background color
+        main_surface.fill((0, 200, 255))
+
         # Draw a circle on the surface
-        score_text.set_text(score)
         circle.draw(main_surface)
-        score_text.draw(main_surface)
-        button.draw(main_surface)
-        check_box.draw(main_surface)
+
+        # UI Elements
+        score_text.set_text(score)
+        canvas.draw()
 
         # Now the surface is ready, tell pygame to display it!
         pygame.display.flip()
@@ -109,8 +108,5 @@ def main():
 
         # Storing the last frame ticks
         t_last = t
-
-
-    pygame.quit()     # Once we leave the loop, close the window.
 
 main()
