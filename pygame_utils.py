@@ -1,6 +1,7 @@
 from abc import abstractmethod
 import gc
 import sys
+from turtle import onclick, pos
 from typing import Any, Callable, Optional
 
 import pygame
@@ -79,6 +80,9 @@ class Button:
         self.current_color = self.disabled_color
 
     def set_label_pos(self):
+        if not self.label:
+            return
+        
         if self.label_alignment == "center":
             label_offset = (self.size.x / 2, self.size.y / 2)
         else:
@@ -114,6 +118,31 @@ class Button:
     def call_back(self, *args):
         if self.func:
             return self.func(*args)
+
+
+class CheckBox(Button):
+    def __init__(self, on_click:Optional[Callable]=None, 
+    position: Vector2=Vector2(0, 0), size: Vector2=Vector2(50, 50), 
+    color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220), 
+    pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165), 
+    tick_color: pygame.Color | tuple[int, int, int]=(55, 55, 55), is_on: bool=False, 
+    border_radius: int=0, disabled: bool=False, label_alignment: str="center") -> None:
+        super().__init__(on_click, position, size, color, hover_color, pressed_color, disabled_color, 
+        border_radius, disabled, None, label_alignment)
+        self.tick_color = tick_color
+        self.is_on = is_on
+        self.tick_rect = pygame.Rect(Vector2(position.x + size.x/4, position.y + size.y/4), Vector2(size.x / 2, size.y / 2))
+    
+    def draw(self, surface: pygame.Surface):
+        self.mouseover()
+        pygame.draw.rect(surface, self.current_color, self.rect, border_radius=self.border_radius)
+        if self.is_on:
+            pygame.draw.rect(surface=surface, color=self.tick_color, rect=self.tick_rect)
+
+    def call_back(self, *args):
+        self.is_on = not self.is_on
+        if self.func:
+            return self.func(self.is_on, *args)
 
 
 class Label(Sprite):
@@ -217,7 +246,7 @@ class Color:
 
     GREEN = pygame.color.Color(0, 255, 0)
     BLUE = pygame.color.Color(0, 0, 255)
-    BLUE = pygame.color.Color(0, 255, 255)
+    CYAN = pygame.color.Color(0, 255, 255)
     RED = pygame.color.Color(255, 0, 0)
     PINK = pygame.color.Color(255, 102, 178)
     YELLOW = pygame.color.Color(255, 255, 0)

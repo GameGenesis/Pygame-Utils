@@ -3,7 +3,7 @@ import math
 import pygame
 from pygame.math import Vector2
 
-from pygame_utils import ButtonManager, Button, EventManager, Label, Square, Circle, Color
+from pygame_utils import ButtonManager, Button, CheckBox, EventManager, Label, Square, Circle, Color
 
 class CollisonMath:
     @staticmethod
@@ -59,7 +59,11 @@ def main():
     circle = Circle(Vector2(20, 20), Color.RED, 20)
     score_text = Label(font_size=60, text=score, position=(surface_size[0] - 50, 50), anchor="topright")
 
+    def toggle_color(on):
+        circle.color = Color.BLUE if on else Color.RED
+
     button = Button(position=Vector2(50, 50), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False)
+    check_box = CheckBox(position=Vector2(50, surface_size[1] - 200), on_click=toggle_color)
     button_manager = ButtonManager()
 
     event_manager = EventManager([toggle_velocity, button_manager.handle_button_events])
@@ -89,7 +93,7 @@ def main():
         if current_velocity != [0, 0]:
             if circle.pos.x + circle.radius/2 >= main_surface.get_width() or circle.pos.x - circle.radius/2 <= 0:
                 current_velocity[0] *= -1
-            elif circle.pos.y + circle.radius/2 >= main_surface.get_height() or circle.pos.y - circle.radius/2 <= 0:
+            if circle.pos.y + circle.radius/2 >= main_surface.get_height() or circle.pos.y - circle.radius/2 <= 0:
                 current_velocity[1] *= -1
 
         # Draw a circle on the surface
@@ -97,6 +101,7 @@ def main():
         score_text.set_text(score)
         score_text.draw(main_surface)
         button.draw(main_surface)
+        check_box.draw(main_surface)
 
         # Now the surface is ready, tell pygame to display it!
         pygame.display.flip()
