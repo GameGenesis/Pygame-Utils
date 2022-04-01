@@ -5,6 +5,48 @@ import pygame
 from pygame.sprite import Sprite
 from pygame.math import Vector2
 
+
+class Label(Sprite):
+    def __init__(self, text, color=(255, 255, 255), font_name=None, font_size=28, position=(0, 0), anchor="topleft"):
+        super().__init__()
+        self.font = pygame.font.Font(font_name, font_size)
+        self.text = str(text)
+        self.color = color
+        self.anchor = anchor
+        self.position = position
+        self._render()
+
+    def _render(self):
+        self.image = self.font.render(self.text, True, self.color)
+        self.rect = self.image.get_rect(**{self.anchor: self.position})
+
+    def clip(self, rect):
+        self.image = self.image.subsurface(rect)
+        self.rect = self.image.get_rect(**{self.anchor: self.position})
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
+    def set_text(self, text):
+        self.text = str(text)
+        self._render()
+
+    def set_font(self, font_name, font_size):
+        self.font = pygame.font.Font(font_name, font_size)
+        self._render()
+
+    def set_color(self, color):
+        self.color = color
+        self._render()
+
+    def set_position(self, position, anchor=None):
+        self.position = position
+        if anchor:
+            self.anchor = anchor
+
+        self.rect = self.image.get_rect(**{self.anchor: self.position})
+
+
 class Shape(object):
     def __init__(self, pos: Vector2=Vector2(0, 0), color: tuple[int]=(0, 0, 0)) -> None:
         self.pos = pos
