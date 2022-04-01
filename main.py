@@ -3,7 +3,7 @@ import math
 import pygame
 from pygame.math import Vector2
 
-from pygame_utils import ButtonManager, Button, Label, Square, Circle, Color
+from pygame_utils import ButtonManager, Button, EventManager, Label, Square, Circle, Color
 
 class CollisonMath:
     @staticmethod
@@ -26,12 +26,18 @@ class CollisonMath:
 
         return distance
 
-
+velocity = [400, 400]
+current_velocity = velocity
 score = 0
 
 def increment_score(value=1):
     global score
     score += value
+
+def toggle_velocity(event):
+    global velocity, current_velocity
+    if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+        current_velocity = [0, 0] if current_velocity != [0, 0] else velocity
 
 def main():
     #-----------------------------Setup------------------------------------------------------#
@@ -50,27 +56,18 @@ def main():
     # Set up some data to describe a small circle and its color
     t_last = 0
 
-    velocity = [400, 400]
-    current_velocity = velocity
-
     circle = Circle(Vector2(20, 20), Color.RED, 20)
     score_text = Label(font_size=60, text=score, position=(surface_size[0] - 50, 50), anchor="topright")
 
     button = Button(position=Vector2(50, 50), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False)
     button_manager = ButtonManager()
 
+    event_manager = EventManager([toggle_velocity, button_manager.handle_button_events])
+
     #-----------------------------Main Game Loop---------------------------------------------#
     while True:
 
-        #-----------------------------Event Handling-----------------------------------------#
-        event = pygame.event.poll()    # Look for any event
-        if event.type == pygame.QUIT:  # Window close button clicked?
-            break                   #   ... leave game loop
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-              current_velocity = (0, 0) if current_velocity != (0, 0) else velocity
-        button_manager.handle_button_events(event)
-
+        event_manager.handle_events()
 
         #-----------------------------Game Logic---------------------------------------------#
         # Update your game objects and data structures here...

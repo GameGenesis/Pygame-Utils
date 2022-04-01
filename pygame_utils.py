@@ -1,9 +1,29 @@
 from abc import abstractmethod
 import gc
+import sys
+from typing import Callable
 
 import pygame
 from pygame.sprite import Sprite
 from pygame.math import Vector2
+
+class EventManager:
+    def __init__(self, call_backs:Callable | list[Callable]=None) -> None:
+        if call_backs:
+            if type(call_backs) == list:
+                self.funcs = call_backs
+            else:
+                self.funcs = [call_backs]
+        else:
+            self.funcs = []
+
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            for func in self.funcs:
+                func(event)
 
 class ButtonManager:
     def __init__(self) -> None:
@@ -14,11 +34,15 @@ class ButtonManager:
 
     def handle_button_events(self, event, *args):
         if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button != 1:
+                return
             pos = pygame.mouse.get_pos()
             for button in self.buttons:
                 if button.rect.collidepoint(pos) and not button.disabled:
                     button.button_press()
         elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button != 1:
+                return
             pos = pygame.mouse.get_pos()
             for button in self.buttons:
                 button.button_release()
