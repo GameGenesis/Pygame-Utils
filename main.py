@@ -89,10 +89,11 @@ def main():
         # Moving 200 pixels per second in the positive x direction
         circle.move(circle.pos.x + current_velocity[0] * delta_time, circle.pos.y + current_velocity[1] * delta_time)
 
-        if circle.pos.x >= main_surface.get_width() or circle.pos.x <= 0:
-            current_velocity[0] *= -1
-        elif circle.pos.y >= main_surface.get_height() or circle.pos.y <= 0:
-            current_velocity[1] *= -1
+        if current_velocity != [0, 0]:
+            if circle.pos.x + circle.radius/2 >= main_surface.get_width() or circle.pos.x - circle.radius/2 <= 0:
+                current_velocity[0] *= -1
+            elif circle.pos.y + circle.radius/2 >= main_surface.get_height() or circle.pos.y - circle.radius/2 <= 0:
+                current_velocity[1] *= -1
 
         # Draw a circle on the surface
         circle.draw(main_surface)
