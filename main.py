@@ -63,10 +63,9 @@ def main():
         circle.color = Color.BLUE if on else Color.RED
 
     button = Button(position=Vector2(50, 50), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False)
-    check_box = CheckBox(position=Vector2(50, surface_size[1] - 200), on_click=toggle_color)
-    button_manager = ButtonManager()
+    check_box = CheckBox(position=Vector2(25, surface_size[1] - 75), on_click=toggle_color)
 
-    event_manager = EventManager([toggle_velocity, button_manager.handle_button_events])
+    event_manager = EventManager(toggle_velocity)
 
     #-----------------------------Main Game Loop---------------------------------------------#
     while True:
@@ -97,8 +96,8 @@ def main():
                 current_velocity[1] *= -1
 
         # Draw a circle on the surface
-        circle.draw(main_surface)
         score_text.set_text(score)
+        circle.draw(main_surface)
         score_text.draw(main_surface)
         button.draw(main_surface)
         check_box.draw(main_surface)

@@ -8,8 +8,10 @@ import pygame
 from pygame.sprite import Sprite
 from pygame.math import Vector2
 
+
 class EventManager:
     def __init__(self, call_backs: Optional[Callable] | Optional[list[Callable]]=None) -> None:
+        self.button_manager = ButtonManager()
         if call_backs:
             if type(call_backs) == list:
                 self.funcs = call_backs
@@ -25,6 +27,8 @@ class EventManager:
                 sys.exit()
             for func in self.funcs:
                 func(event)
+            self.button_manager.handle_button_events(event)
+
 
 class ButtonManager:
     def __init__(self) -> None:
@@ -134,15 +138,13 @@ class CheckBox(Button):
         self.tick_rect = pygame.Rect(Vector2(position.x + size.x/4, position.y + size.y/4), Vector2(size.x / 2, size.y / 2))
     
     def draw(self, surface: pygame.Surface):
-        self.mouseover()
-        pygame.draw.rect(surface, self.current_color, self.rect, border_radius=self.border_radius)
+        super().draw(surface)
         if self.is_on:
             pygame.draw.rect(surface=surface, color=self.tick_color, rect=self.tick_rect)
 
     def call_back(self, *args):
         self.is_on = not self.is_on
-        if self.func:
-            return self.func(self.is_on, *args)
+        super().call_back(self.is_on, *args)
 
 
 class Label(Sprite):
