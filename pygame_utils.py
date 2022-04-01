@@ -6,6 +6,51 @@ from pygame.sprite import Sprite
 from pygame.math import Vector2
 
 
+class Button:
+    def __init__(self, on_click=None, position=Vector2(0, 0), size=Vector2(150, 75), color=(255, 255, 255), hover_color=(200, 200, 200), border_radius=0, label=None, label_alignment="center"):
+        self.func = on_click
+        self.position = position
+        self.size = size
+        self.rect = pygame.rect.Rect(position, size)
+        self.current_color = color
+        self.color = color
+        self.hover_color = hover_color
+        self.border_radius = border_radius
+        self.label = label
+        self.label_alignment = label_alignment
+        self.set_label_pos()
+        if self.label:
+            self.label._render()
+
+    def set_label_pos(self):
+        if self.label_alignment == "center":
+            label_offset = (self.size.x / 2, self.size.y / 2)
+        else:
+            label_offset = (0, 0)
+        label_pos = (self.position.x + self.label.position[0] + label_offset[0], self.position.y + self.label.position[1] + label_offset[1])
+        self.label.set_position(label_pos, anchor="center")
+
+    def set_text(self, text):
+        if self.label:
+            self.label.set_text(text)
+
+    def draw(self, surface):
+        self.mouseover()
+        pygame.draw.rect(surface, self.current_color, self.rect, border_radius=self.border_radius)
+        if self.label:
+            self.label.draw(surface)
+
+    def mouseover(self):
+        self.current_color = self.color
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            self.current_color = self.hover_color
+
+    def call_back(self, *args):
+        if self.func:
+            return self.func(*args)
+
+
 class Label(Sprite):
     def __init__(self, text, color=(255, 255, 255), font_name=None, font_size=28, position=(0, 0), anchor="topleft"):
         super().__init__()
