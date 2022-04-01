@@ -18,6 +18,7 @@ class Shape(object):
     def draw(self, surface):
         ...
 
+
 class Square(Shape):
     def __init__(self, pos: Vector2=Vector2(0, 0), color: tuple[int]=(0, 0, 0), size: Vector2=Vector2(100, 100)) -> None:
         super().__init__(pos, color)
@@ -35,6 +36,7 @@ class Square(Shape):
     def draw(self, surface):
         pygame.draw.rect(surface=surface, color=self.color, rect=self.rect)
 
+
 class Circle(Shape):
     def __init__(self, pos: Vector2=Vector2(0, 0), color: tuple[int]=(0, 0, 0), radius: int=10) -> None:
         super().__init__(pos, color)
@@ -50,3 +52,20 @@ class Circle(Shape):
 
     def draw(self, surface):
         pygame.draw.circle(surface=surface, color=self.color, center=self.pos, radius=self.radius)
+
+
+class Color:
+    BLACK = pygame.color.Color(0, 0, 0)
+    CLEAR = pygame.color.Color(0, 0, 0, 0)
+    WHITE = pygame.color.Color(255, 255, 255)
+    GREY = pygame.color.Color(128, 128, 128)
+    GRAY = GREY
+
+    GREEN = pygame.color.Color(0, 255, 0)
+    BLUE = pygame.color.Color(0, 0, 255)
+    BLUE = pygame.color.Color(0, 255, 255)
+    RED = pygame.color.Color(255, 0, 0)
+    PINK = pygame.color.Color(255, 102, 178)
+    YELLOW = pygame.color.Color(255, 255, 0)
+    ORANGE = pygame.color.Color(255, 128, 0)
+    MAGENTA = pygame.color.Color(255, 0, 255)
