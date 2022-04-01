@@ -13,10 +13,16 @@ class ButtonManager:
                 self.buttons.append(obj)
 
     def handle_button_events(self, event, *args):
-        if event.type == pygame.MOUSEBUTTONUP:
+        if event.type == pygame.MOUSEBUTTONDOWN:
             pos = pygame.mouse.get_pos()
             for button in self.buttons:
-                if button.rect.collidepoint(pos):
+                if button.rect.collidepoint(pos) and not button.disabled:
+                    button.button_press()
+        elif event.type == pygame.MOUSEBUTTONUP:
+            pos = pygame.mouse.get_pos()
+            for button in self.buttons:
+                button.button_release()
+                if button.rect.collidepoint(pos) and not button.disabled:
                     button.call_back(*args)
 
 
