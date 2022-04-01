@@ -53,8 +53,8 @@ class ButtonManager:
 class Button:
     def __init__(self, on_click:Optional[Callable]=None, 
     position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 75), 
-    color: tuple[int, int, int]=(255, 255, 255), hover_color: tuple[int, int, int]=(220, 220, 220), 
-    pressed_color: tuple[int, int, int]=(185, 185, 185), disabled_color: tuple[int, int, int]=(165, 165, 165), 
+    color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220), 
+    pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165), 
     border_radius: int=0, disabled: bool=False, label: "Label"=None, label_alignment: str="center") -> None:
         self.func = on_click
         self.position = position
@@ -117,7 +117,7 @@ class Button:
 
 
 class Label(Sprite):
-    def __init__(self, text: str | Any, color: tuple[int, int, int]=(255, 255, 255), 
+    def __init__(self, text: str | Any, color: pygame.Color | tuple[int, int, int]=(255, 255, 255), 
     font_name: str=None, font_size: int=28, position: tuple[int, int]=(0, 0), anchor: str="topleft"):
         super().__init__()
         self.font = pygame.font.Font(font_name, font_size)
@@ -159,26 +159,27 @@ class Label(Sprite):
 
 
 class Shape(object):
-    def __init__(self, pos: Vector2=Vector2(0, 0), color: tuple[int, int, int]=(0, 0, 0)) -> None:
+    def __init__(self, pos: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
         self.pos = pos
         self.color = color
 
     @abstractmethod
-    def move(self, x=None, y=None):
+    def move(self, x: int=None, y: int=None):
         ...
 
     @abstractmethod
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         ...
 
 
 class Square(Shape):
-    def __init__(self, pos: Vector2=Vector2(0, 0), color: tuple[int, int, int]=(0, 0, 0), size: Vector2=Vector2(100, 100)) -> None:
+    def __init__(self, pos: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0), 
+    size: Vector2=Vector2(100, 100)) -> None:
         super().__init__(pos, color)
         self.size = size
         self.rect = pygame.Rect(pos, size)
 
-    def move(self, x=None, y=None):
+    def move(self, x: int=None, y: int=None):
         if x and y:
             self.pos = pygame.Rect(self.pos, Vector2(x, y))
         elif x:
@@ -186,16 +187,16 @@ class Square(Shape):
         else:
             self.pos = pygame.Rect(self.pos, Vector2(self.pos.x, y))
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         pygame.draw.rect(surface=surface, color=self.color, rect=self.rect)
 
 
 class Circle(Shape):
-    def __init__(self, pos: Vector2=Vector2(0, 0), color: tuple[int]=(0, 0, 0), radius: int=10) -> None:
+    def __init__(self, pos: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0), radius: int=10) -> None:
         super().__init__(pos, color)
         self.radius = radius
 
-    def move(self, x=None, y=None):
+    def move(self, x: int=None, y: int=None):
         if x and y:
             self.pos = Vector2(x, y)
         elif x:
@@ -203,7 +204,7 @@ class Circle(Shape):
         else:
             self.pos = Vector2(self.pos.x, y)
 
-    def draw(self, surface):
+    def draw(self, surface: pygame.Surface):
         pygame.draw.circle(surface=surface, color=self.color, center=self.pos, radius=self.radius)
 
 
