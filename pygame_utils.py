@@ -10,7 +10,7 @@ from pygame.math import Vector2
 
 
 class EventManager:
-    def __init__(self, call_backs: Optional[Callable] | Optional[list[Callable]]=None) -> None:
+    def __init__(self, call_backs: Optional[Callable] | Optional[list[Callable]]=None, on_quit: Optional[Callable]=None) -> None:
         self.button_manager = ButtonManager()
         if call_backs:
             if type(call_backs) == list:
@@ -19,10 +19,13 @@ class EventManager:
                 self.funcs = [call_backs]
         else:
             self.funcs = []
+        self.on_quit = on_quit
 
     def handle_events(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                if self.on_quit:
+                    self.on_quit()
                 pygame.quit()
                 sys.exit()
             for func in self.funcs:
