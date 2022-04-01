@@ -2,6 +2,7 @@ import math
 
 import pygame
 from pygame.math import Vector2
+from json_save import JsonSave
 
 from pygame_utils import Button, Canvas, CheckBox, EventManager, Label, Square, Circle, Color
 
@@ -28,7 +29,7 @@ class CollisonMath:
 
 velocity = [400, 400]
 current_velocity = velocity
-score = 0
+score = JsonSave.load("save_data.json", "Score", 0)
 
 def increment_score(value=1):
     global score
@@ -65,7 +66,7 @@ def main():
     button = Button(position=Vector2(50, 50), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False)
     check_box = CheckBox(position=Vector2(25, surface_size[1] - 75), on_click=toggle_color)
 
-    event_manager = EventManager(toggle_velocity)
+    event_manager = EventManager(toggle_velocity, on_quit=lambda: JsonSave.save("save_data.json", "Score", score))
     canvas = Canvas(main_surface)
 
     #-----------------------------Main Game Loop---------------------------------------------#
