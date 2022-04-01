@@ -56,7 +56,7 @@ def main():
     circle = Circle(Vector2(20, 20), Color.RED, 20)
     score_text = Label(font_size=60, text=score, position=(surface_size[0] - 50, 50), anchor="topright")
 
-    button = Button(position=Vector2(50, 50), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score)
+    button = Button(position=Vector2(50, 50), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False)
     button_manager = ButtonManager()
 
     #-----------------------------Main Game Loop---------------------------------------------#

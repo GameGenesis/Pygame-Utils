@@ -21,7 +21,7 @@ class ButtonManager:
 
 
 class Button:
-    def __init__(self, on_click=None, position=Vector2(0, 0), size=Vector2(150, 75), color=(255, 255, 255), hover_color=(200, 200, 200), border_radius=0, label=None, label_alignment="center"):
+    def __init__(self, on_click=None, position=Vector2(0, 0), size=Vector2(150, 75), color=(255, 255, 255), hover_color=(220, 220, 220), pressed_color=(185, 185, 185), disabled_color=(165, 165, 165), border_radius=0, disabled=False, label=None, label_alignment="center"):
         self.func = on_click
         self.position = position
         self.size = size
@@ -29,12 +29,20 @@ class Button:
         self.current_color = color
         self.color = color
         self.hover_color = hover_color
+        self.pressed_color = pressed_color
+        self.disabled_color = disabled_color
         self.border_radius = border_radius
+        self.pressed = False
+        self.set_disabled(disabled)
         self.label = label
         self.label_alignment = label_alignment
         self.set_label_pos()
         if self.label:
             self.label._render()
+
+    def set_disabled(self, disabled):
+        self.disabled = disabled
+        self.current_color = self.disabled_color
 
     def set_label_pos(self):
         if self.label_alignment == "center":
@@ -55,10 +63,19 @@ class Button:
             self.label.draw(surface)
 
     def mouseover(self):
+        if self.disabled or self.pressed:
+            return
         self.current_color = self.color
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(pos):
             self.current_color = self.hover_color
+
+    def button_press(self):
+        self.pressed = True
+        self.current_color = self.pressed_color
+
+    def button_release(self):
+        self.pressed = False
 
     def call_back(self, *args):
         if self.func:
