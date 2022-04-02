@@ -4,7 +4,7 @@ import pygame
 from pygame.math import Vector2
 from json_save import JsonSave
 
-from pygame_utils import Button, Canvas, CheckBox, EventManager, InputBox, Label, Panel, Square, Circle, Color
+from pygame_utils import Alignment, Button, Canvas, CheckBox, EventManager, InputBox, Label, Panel, Square, Circle, Color
 
 class CollisonMath:
     @staticmethod
@@ -67,8 +67,8 @@ def main():
         circle.color = Color.BLUE if on else Color.RED
 
     # panel = Panel()
-    score_text = Label(font_size=60, text=score, position=(surface_size[0] - 50, 50), anchor="topright")
-    button = Button(position=Vector2(50, 50), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False, label_alignment="midbottom")
+    score_text = Label(font_size=60, text=score, position=(surface_size[0] - 25, 35), anchor=Alignment.TOP_RIGHT)
+    button = Button(position=Vector2(25, 25), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False, label_alignment=Alignment.CENTER)
     check_box = CheckBox(position=Vector2(25, surface_size[1] - 75), on_value_change=toggle_color)
     input_box = InputBox(position=Vector2(surface_size[0] - 200, surface_size[1] - 75), on_submit=set_score)
 

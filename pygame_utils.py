@@ -1,16 +1,45 @@
 from abc import ABC, abstractmethod
+from typing import Any, Callable, Type
+
 import gc
 import sys
-from turtle import onclick, pos
-from typing import Any, Callable, Optional
 
 import pygame
 from pygame.sprite import Sprite
 from pygame.math import Vector2
 
 
+class Color:
+    BLACK = pygame.color.Color(0, 0, 0)
+    CLEAR = pygame.color.Color(0, 0, 0, 0)
+    WHITE = pygame.color.Color(255, 255, 255)
+    GREY = pygame.color.Color(128, 128, 128)
+    GRAY = GREY
+
+    GREEN = pygame.color.Color(0, 255, 0)
+    BLUE = pygame.color.Color(0, 0, 255)
+    CYAN = pygame.color.Color(0, 255, 255)
+    RED = pygame.color.Color(255, 0, 0)
+    PINK = pygame.color.Color(255, 102, 178)
+    YELLOW = pygame.color.Color(255, 255, 0)
+    ORANGE = pygame.color.Color(255, 128, 0)
+    MAGENTA = pygame.color.Color(255, 0, 255)
+
+
+class Alignment:
+    TOP_LEFT = "topleft"
+    BOTTOM_LEFT = "bottomleft"
+    TOP_RIGHT = "topright"
+    BOTTOM_RIGHT = "bottomright"
+    MID_TOP = "midtop"
+    MID_LEFT = "midleft"
+    MID_BOTTOM = "midbottom"
+    MID_RIGHT = "midright"
+    CENTER = "center"
+
+
 class EventManager:
-    def __init__(self, call_backs: Optional[Callable] | Optional[list[Callable]]=None, on_quit: Optional[Callable]=None) -> None:
+    def __init__(self, call_backs: Callable | list[Callable]=None, on_quit: Callable=None) -> None:
         if call_backs:
             if type(call_backs) == list:
                 self.funcs = call_backs
@@ -47,15 +76,18 @@ class Canvas:
         for graphic in self.graphic_elements:
             graphic.draw(self.main_surface)
 
+
 class Graphic(ABC):
     @abstractmethod
     def draw(self, surface: pygame.Surface):
         ...
 
+
 class Graphic_Event(ABC):
     @abstractmethod
     def handle_event(self, event: pygame.event.Event) -> None:
         ...
+
 
 class Panel(Graphic):
     def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=None,
@@ -77,12 +109,61 @@ class Panel(Graphic):
             self._render(surface)
         surface.blit(self.panel_surface, self.position)
 
+
+class Label(Sprite, Graphic):
+    def __init__(self, text: str | Any, color: pygame.Color | tuple[int, int, int]=(255, 255, 255),
+    font_name: str=None, font_size: int=28, position: tuple[int, int]=(0, 0), anchor: Type[Alignment] | str="midleft"):
+        super().__init__()
+        self.font = pygame.font.Font(font_name, font_size)
+        self.text = str(text)
+        self.color = color
+        self.anchor = anchor
+        self.position = position
+        self._render()
+
+    def _render(self):
+        self.image = self.font.render(self.text, True, self.color)
+        self.text_rect = self.image.get_rect(**{self.anchor: self.position})
+
+    def clip(self, rect: pygame.Rect):
+        self.image = self.image.subsurface(rect)
+        self.text_rect = self.image.get_rect(**{self.anchor: self.position})
+
+    def draw(self, surface: pygame.Surface):
+        surface.blit(self.image, self.text_rect)
+
+    def set_text(self, text: str):
+        self.text = str(text)
+        self._render()
+
+    def set_font(self, font_name: str, font_size: int):
+        self.font = pygame.font.Font(font_name, font_size)
+        self._render()
+
+    def set_color(self, color: tuple[int, int, int]):
+        self.color = color
+        self._render()
+
+    def set_position(self, position: tuple[int, int], anchor: Type[Alignment] | str=None):
+        """
+        Anchor can be:
+        topleft, bottomleft, topright, bottomright
+        midtop, midleft, midbottom, midright
+        center
+        """
+        self.position = position
+        if anchor:
+            self.anchor = anchor
+
+        self.text_rect = self.image.get_rect(**{self.anchor: self.position})
+
+
 class Button(Graphic, Graphic_Event):
-    def __init__(self, on_click: Optional[Callable]=None,
+    def __init__(self, on_click: Callable=None,
     position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 75),
     color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220),
     pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165),
-    border_radius: int=0, disabled: bool=False, label: "Label"=None, label_alignment: str="center") -> None:
+    border_radius: int=0, disabled: bool=False, label: Type[Label]=None, label_alignment: Type[Alignment] | str="center") -> None:
         self.func = on_click
         self.position = position
         self.size = size
@@ -182,12 +263,12 @@ class Button(Graphic, Graphic_Event):
 
 
 class CheckBox(Button):
-    def __init__(self, on_value_change: Optional[Callable]=None,
+    def __init__(self, on_value_change: Callable=None,
     position: Vector2=Vector2(0, 0), size: Vector2=Vector2(50, 50),
     color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220),
     pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165),
     tick_color: pygame.Color | tuple[int, int, int]=(55, 55, 55), is_on: bool=False,
-    border_radius: int=0, disabled: bool=False, label_alignment: str="center") -> None:
+    border_radius: int=0, disabled: bool=False, label_alignment: Type[Alignment] | str="midleft") -> None:
         super().__init__(on_value_change, position, size, color, hover_color, pressed_color, disabled_color,
         border_radius, disabled, None, label_alignment)
         self.tick_color = tick_color
@@ -204,57 +285,9 @@ class CheckBox(Button):
         super().call_back(self.is_on)
 
 
-class Label(Sprite, Graphic):
-    def __init__(self, text: str | Any, color: pygame.Color | tuple[int, int, int]=(255, 255, 255),
-    font_name: str=None, font_size: int=28, position: tuple[int, int]=(0, 0), anchor: str="topleft"):
-        super().__init__()
-        self.font = pygame.font.Font(font_name, font_size)
-        self.text = str(text)
-        self.color = color
-        self.anchor = anchor
-        self.position = position
-        self._render()
-
-    def _render(self):
-        self.image = self.font.render(self.text, True, self.color)
-        self.text_rect = self.image.get_rect(**{self.anchor: self.position})
-
-    def clip(self, rect: pygame.Rect):
-        self.image = self.image.subsurface(rect)
-        self.text_rect = self.image.get_rect(**{self.anchor: self.position})
-
-    def draw(self, surface: pygame.Surface):
-        surface.blit(self.image, self.text_rect)
-
-    def set_text(self, text: str):
-        self.text = str(text)
-        self._render()
-
-    def set_font(self, font_name: str, font_size: int):
-        self.font = pygame.font.Font(font_name, font_size)
-        self._render()
-
-    def set_color(self, color: tuple[int, int, int]):
-        self.color = color
-        self._render()
-
-    def set_position(self, position: tuple[int, int], anchor: str=None):
-        """
-        Anchor can be:
-        topleft, bottomleft, topright, bottomright
-        midtop, midleft, midbottom, midright
-        center
-        """
-        self.position = position
-        if anchor:
-            self.anchor = anchor
-
-        self.text_rect = self.image.get_rect(**{self.anchor: self.position})
-
-
 class InputBox(Label, Graphic_Event):
-    def __init__(self, on_value_change: Optional[Callable]=None, on_delete: Optional[Callable]=None,
-    on_submit: Optional[Callable]=None, on_select: Optional[Callable]=None, submit_on_return: bool=True,
+    def __init__(self, on_value_change: Callable=None, on_delete: Callable=None,
+    on_submit: Callable=None, on_select: Callable=None, submit_on_return: bool=True,
     position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 35),
     box_color: pygame.Color | tuple[int, int, int]=(255, 255, 255), border_thickness: int=2,
     border_color_active: pygame.Color | tuple[int, int, int]=(20, 20, 20),
@@ -371,20 +404,3 @@ class Circle(Shape):
 
     def draw(self, surface: pygame.Surface):
         pygame.draw.circle(surface=surface, color=self.color, center=self.position, radius=self.radius)
-
-
-class Color:
-    BLACK = pygame.color.Color(0, 0, 0)
-    CLEAR = pygame.color.Color(0, 0, 0, 0)
-    WHITE = pygame.color.Color(255, 255, 255)
-    GREY = pygame.color.Color(128, 128, 128)
-    GRAY = GREY
-
-    GREEN = pygame.color.Color(0, 255, 0)
-    BLUE = pygame.color.Color(0, 0, 255)
-    CYAN = pygame.color.Color(0, 255, 255)
-    RED = pygame.color.Color(255, 0, 0)
-    PINK = pygame.color.Color(255, 102, 178)
-    YELLOW = pygame.color.Color(255, 255, 0)
-    ORANGE = pygame.color.Color(255, 128, 0)
-    MAGENTA = pygame.color.Color(255, 0, 255)
