@@ -57,6 +57,26 @@ class Graphic_Event(ABC):
     def handle_event(self, event: pygame.event.Event) -> None:
         ...
 
+class Panel(Graphic):
+    def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=None, 
+    color: pygame.Color | tuple[int, int, int, int]=(80, 80, 80, 100)) -> None:
+        self.position = position
+        self.size = size
+        self.color = color
+        self.panel_surface = None
+
+    def _render(self, surface: pygame.Surface):
+        # If size is set to none, it defaults to the screen/surface size
+        if not self.size:
+            self.size = surface.get_size()
+        self.panel_surface = pygame.Surface(self.size, pygame.SRCALPHA)
+        self.panel_surface.fill(self.color)
+
+    def draw(self, surface: pygame.Surface):
+        if not self.panel_surface:
+            self._render(surface)
+        surface.blit(self.panel_surface, self.position)
+
 class Button(Graphic, Graphic_Event):
     def __init__(self, on_click: Optional[Callable]=None,
     position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 75),
@@ -286,8 +306,8 @@ class Shape(object):
 
 
 class Square(Shape):
-    def __init__(self, position: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0),
-    size: Vector2=Vector2(100, 100)) -> None:
+    def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=Vector2(100, 100), 
+    color: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
         super().__init__(position, color)
         self.size = size
         self.rect = pygame.Rect(position, size)
@@ -305,7 +325,7 @@ class Square(Shape):
 
 
 class Circle(Shape):
-    def __init__(self, position: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0), radius: int=10) -> None:
+    def __init__(self, position: Vector2=Vector2(0, 0), radius: int=10, color: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
         super().__init__(position, color)
         self.radius = radius
 
