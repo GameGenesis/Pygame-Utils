@@ -52,21 +52,30 @@ class EventManager:
     INSTANCE = None
 
     def __init__(self, call_backs: Callable | list[Callable]=None, on_quit: Callable=None) -> None:
+        self._singleton()
+        self.set_events()
+
+    def _singleton(self):
         if EventManager.INSTANCE:
             self.update_managed_objects(EventManager.INSTANCE.graphic_events)
         else:
             self.graphic_events = []
         EventManager.INSTANCE = self
 
+    def set_events(self, call_backs: Callable | list[Callable]=None, on_quit: Callable=None) -> None:
         if call_backs:
             if type(call_backs) == list:
                 self.funcs = call_backs
             else:
                 self.funcs = [call_backs]
         else:
-            self.funcs = []
+            if not hasattr(self, 'funcs'):
+                self.funcs = []
 
         self.on_quit = on_quit
+
+    def add_event(self, call_back: Callable | list[Callable]):
+        self.funcs.append(call_back)
 
     def update_managed_objects(self, graphic_events: list[Graphic_Event]):
         self.graphic_events = graphic_events
@@ -103,13 +112,16 @@ class Graphic:
 class Canvas:
     INSTANCE = None
     def __init__(self) -> None:
+        self._singleton()
+
+        self.main_surface = pygame.display.get_surface()
+        self.graphic_elements = []
+
+    def _singleton(self):
         if Canvas.INSTANCE:
             del self
             return
         Canvas.INSTANCE = self
-
-        self.main_surface = pygame.display.get_surface()
-        self.graphic_elements = []
 
     def find_managed_objects(self):
         """
