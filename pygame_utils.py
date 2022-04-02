@@ -11,7 +11,6 @@ from pygame.math import Vector2
 
 class EventManager:
     def __init__(self, call_backs: Optional[Callable] | Optional[list[Callable]]=None, on_quit: Optional[Callable]=None) -> None:
-        self.button_manager = ButtonManager()
         if call_backs:
             if type(call_backs) == list:
                 self.funcs = call_backs
@@ -19,7 +18,9 @@ class EventManager:
                 self.funcs = [call_backs]
         else:
             self.funcs = []
+        
         self.on_quit = on_quit
+        self.graphic_events = [obj for obj in gc.get_objects() if isinstance(obj, Graphic_Event)]
 
     def handle_events(self) -> None:
         for event in pygame.event.get():
@@ -30,7 +31,8 @@ class EventManager:
                 sys.exit()
             for func in self.funcs:
                 func(event)
-            self.button_manager.handle_button_events(event)
+            for ge in self.graphic_events:
+                ge.handle_event(event)
 
 
 class Canvas:
@@ -50,33 +52,12 @@ class Graphic(ABC):
     def draw(self, surface: pygame.Surface):
         ...
 
+class Graphic_Event(ABC):
+    @abstractmethod
+    def handle_event(self, event: pygame.event.Event) -> None:
+        ...
 
-class ButtonManager:
-    def __init__(self) -> None:
-        self.buttons = []
-        for obj in gc.get_objects():
-            if isinstance(obj, Button):
-                self.buttons.append(obj)
-
-    def handle_button_events(self, event: pygame.event.Event, *args) -> None:
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button != 1:
-                return
-            pos = pygame.mouse.get_pos()
-            for button in self.buttons:
-                if button.rect.collidepoint(pos) and not button.disabled:
-                    button.button_press()
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if event.button != 1:
-                return
-            pos = pygame.mouse.get_pos()
-            for button in self.buttons:
-                button.button_release()
-                if button.rect.collidepoint(pos) and not button.disabled:
-                    button.call_back(*args)
-
-
-class Button(Graphic):
+class Button(Graphic, Graphic_Event):
     def __init__(self, on_click: Optional[Callable]=None,
     position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 75),
     color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220),
@@ -133,6 +114,21 @@ class Button(Graphic):
         if self.rect.collidepoint(pos):
             self.current_color = self.hover_color
 
+    def handle_event(self, event: pygame.event.Event) -> None:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button != 1:
+                return
+            pos = pygame.mouse.get_pos()
+            if self.rect.collidepoint(pos) and not self.disabled:
+                self.button_press()
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button != 1:
+                return
+            self.button_release()
+            pos = pygame.mouse.get_pos()
+            if self.rect.collidepoint(pos) and not self.disabled:
+                self.call_back()
+
     def button_press(self):
         self.pressed = True
         self.current_color = self.pressed_color
@@ -163,9 +159,9 @@ class CheckBox(Button):
         if self.is_on:
             pygame.draw.rect(surface=surface, color=self.tick_color, rect=self.tick_rect)
 
-    def call_back(self, *args):
+    def call_back(self):
         self.is_on = not self.is_on
-        super().call_back(self.is_on, *args)
+        super().call_back(self.is_on)
 
 
 class Label(Sprite, Graphic):
