@@ -66,11 +66,11 @@ def main():
     def toggle_color(on):
         circle.color = Color.BLUE if on else Color.RED
 
-    panel = Panel()
+    # panel = Panel()
     score_text = Label(font_size=60, text=score, position=(surface_size[0] - 50, 50), anchor="topright")
     button = Button(position=Vector2(50, 50), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False)
     check_box = CheckBox(position=Vector2(25, surface_size[1] - 75), on_value_change=toggle_color)
-    input_box = InputBox(position=Vector2(300, 300), on_submit=set_score)
+    input_box = InputBox(position=Vector2(surface_size[0] - 200, surface_size[1] - 75), on_submit=set_score)
 
     event_manager = EventManager(toggle_velocity, on_quit=lambda: JsonSave.save("save_data.json", "Score", score))
     canvas = Canvas(main_surface)

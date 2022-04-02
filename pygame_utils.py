@@ -18,7 +18,7 @@ class EventManager:
                 self.funcs = [call_backs]
         else:
             self.funcs = []
-        
+
         self.on_quit = on_quit
         self.graphic_events = [obj for obj in gc.get_objects() if isinstance(obj, Graphic_Event)]
 
@@ -58,7 +58,7 @@ class Graphic_Event(ABC):
         ...
 
 class Panel(Graphic):
-    def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=None, 
+    def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=None,
     color: pygame.Color | tuple[int, int, int, int]=(80, 80, 80, 100)) -> None:
         self.position = position
         self.size = size
@@ -227,12 +227,12 @@ class Label(Sprite, Graphic):
 
 
 class InputBox(Label, Graphic_Event):
-    def __init__(self, on_value_change: Optional[Callable]=None, on_delete: Optional[Callable]=None, 
-    on_submit: Optional[Callable]=None, on_select: Optional[Callable]=None, 
-    position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 35), 
-    box_color: pygame.Color | tuple[int, int, int]=(255, 255, 255), border_thickness: int=2, 
-    border_color_active: pygame.Color | tuple[int, int, int]=(20, 20, 20), 
-    border_color_inactive: pygame.Color | tuple[int, int, int]=(100, 100, 100), 
+    def __init__(self, on_value_change: Optional[Callable]=None, on_delete: Optional[Callable]=None,
+    on_submit: Optional[Callable]=None, on_select: Optional[Callable]=None, submit_on_return: bool=True,
+    position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 35),
+    box_color: pygame.Color | tuple[int, int, int]=(255, 255, 255), border_thickness: int=2,
+    border_color_active: pygame.Color | tuple[int, int, int]=(20, 20, 20),
+    border_color_inactive: pygame.Color | tuple[int, int, int]=(100, 100, 100),
     text_color: pygame.Color | tuple[int, int, int]=(20, 20, 20), text: str | Any="", font_name: str=None, font_size: int=28):
         super().__init__(text, text_color, font_name, font_size, position)
         self.rect = pygame.Rect(position, size)
@@ -248,6 +248,7 @@ class InputBox(Label, Graphic_Event):
         self.on_delete = on_delete
         self.on_submit = on_submit
         self.on_select = on_select
+        self.submit_on_return = submit_on_return
 
     def draw(self, surface: pygame.Surface):
         # Overflow
@@ -268,20 +269,25 @@ class InputBox(Label, Graphic_Event):
             # Change the current color of the input box
             self.set_border_state()
         if event.type == pygame.KEYDOWN:
-            if self.active:
-                if event.key == pygame.K_RETURN:
-                    self.call_back(self.on_submit)
-                    self.text = ""
-                    self.active = False
-                    self.set_border_state()
-                elif event.key == pygame.K_BACKSPACE:
-                    self.call_back(self.on_delete)
-                    self.text = self.text[:-1]
-                else:
-                    self.call_back(self.on_value_change)
-                    self.text += event.unicode
-                # Re-render the text
-                self._render()
+            if not self.active:
+                return
+            if event.key == pygame.K_RETURN:
+                if self.submit_on_return:
+                    self.submit()
+            elif event.key == pygame.K_BACKSPACE:
+                self.call_back(self.on_delete)
+                self.text = self.text[:-1]
+            else:
+                self.call_back(self.on_value_change)
+                self.text += event.unicode
+            # Re-render the text
+            self._render()
+
+    def submit(self):
+        self.call_back(self.on_submit)
+        self.text = ""
+        self.active = False
+        self.set_border_state()
 
     def set_border_state(self):
         self.border_color = self.border_color_active if self.active else self.border_color_inactive
@@ -306,7 +312,7 @@ class Shape(object):
 
 
 class Square(Shape):
-    def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=Vector2(100, 100), 
+    def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=Vector2(100, 100),
     color: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
         super().__init__(position, color)
         self.size = size
