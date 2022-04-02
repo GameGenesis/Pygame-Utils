@@ -65,7 +65,7 @@ def main():
 
     button = Button(position=Vector2(50, 50), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False)
     check_box = CheckBox(position=Vector2(25, surface_size[1] - 75), on_value_change=toggle_color)
-    input_box = InputBox(position=Vector2(300, 300), text="Input")
+    input_box = InputBox(position=Vector2(300, 300), text="")
 
     event_manager = EventManager(toggle_velocity, on_quit=lambda: JsonSave.save("save_data.json", "Score", score))
     canvas = Canvas(main_surface)

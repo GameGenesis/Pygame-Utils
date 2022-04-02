@@ -234,8 +234,8 @@ class InputBox(Label):
 
 
 class Shape(object):
-    def __init__(self, pos: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
-        self.pos = pos
+    def __init__(self, position: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
+        self.position = position
         self.color = color
 
     @abstractmethod
@@ -248,39 +248,39 @@ class Shape(object):
 
 
 class Square(Shape):
-    def __init__(self, pos: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0),
+    def __init__(self, position: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0),
     size: Vector2=Vector2(100, 100)) -> None:
-        super().__init__(pos, color)
+        super().__init__(position, color)
         self.size = size
-        self.rect = pygame.Rect(pos, size)
+        self.rect = pygame.Rect(position, size)
 
     def move(self, x: int=None, y: int=None):
         if x and y:
-            self.pos = pygame.Rect(self.pos, Vector2(x, y))
+            self.position = pygame.Rect(self.position, Vector2(x, y))
         elif x:
-            self.pos = pygame.Rect(self.pos, Vector2(x, self.pos.y))
+            self.position = pygame.Rect(self.position, Vector2(x, self.position.y))
         else:
-            self.pos = pygame.Rect(self.pos, Vector2(self.pos.x, y))
+            self.position = pygame.Rect(self.position, Vector2(self.position.x, y))
 
     def draw(self, surface: pygame.Surface):
         pygame.draw.rect(surface=surface, color=self.color, rect=self.rect)
 
 
 class Circle(Shape):
-    def __init__(self, pos: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0), radius: int=10) -> None:
-        super().__init__(pos, color)
+    def __init__(self, position: Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0), radius: int=10) -> None:
+        super().__init__(position, color)
         self.radius = radius
 
     def move(self, x: int=None, y: int=None):
         if x and y:
-            self.pos = Vector2(x, y)
+            self.position = Vector2(x, y)
         elif x:
-            self.pos = Vector2(x, self.pos.y)
+            self.position = Vector2(x, self.position.y)
         else:
-            self.pos = Vector2(self.pos.x, y)
+            self.position = Vector2(self.position.x, y)
 
     def draw(self, surface: pygame.Surface):
-        pygame.draw.circle(surface=surface, color=self.color, center=self.pos, radius=self.radius)
+        pygame.draw.circle(surface=surface, color=self.color, center=self.position, radius=self.radius)
 
 
 class Color:
