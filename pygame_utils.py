@@ -97,24 +97,44 @@ class Button(Graphic, Graphic_Event):
         self.set_disabled(disabled)
         self.label = label
         self.label_alignment = label_alignment
-        self.set_label_pos()
         if self.label:
             self.label._render()
+        self.set_label_pos()
 
     def set_disabled(self, disabled: bool=True):
         self.disabled = disabled
         self.current_color = self.disabled_color
 
     def set_label_pos(self):
+        """
+        Anchor can be:
+        topleft, bottomleft, topright, bottomright
+        midtop, midleft, midbottom, midright
+        center
+        """
         if not self.label:
             return
 
         if self.label_alignment == "center":
-            label_offset = (self.size.x / 2, self.size.y / 2)
+            label_offset = (self.size.x/2, self.size.y/2)
+        elif self.label_alignment == "midtop":
+            label_offset = (self.size.x/2, 0)
+        elif self.label_alignment == "midbottom":
+            label_offset = (self.size.x/2, self.size.y)
+        elif self.label_alignment == "midleft":
+            label_offset = (0, self.size.y/2)
+        elif self.label_alignment == "bottomleft":
+            label_offset = (0, self.size.y)
+        elif self.label_alignment == "topright":
+            label_offset = (self.size.x, 0)
+        elif self.label_alignment == "midright":
+            label_offset = (self.size.x, self.size.y/2)
+        elif self.label_alignment == "bottomright":
+            label_offset = (self.size.x, self.size.y)
         else:
             label_offset = (0, 0)
         label_pos = (self.position.x + self.label.position[0] + label_offset[0], self.position.y + self.label.position[1] + label_offset[1])
-        self.label.set_position(label_pos, anchor="center")
+        self.label.set_position(label_pos, anchor=self.label_alignment)
 
     def set_text(self, text: str | Any):
         if self.label:
@@ -219,6 +239,12 @@ class Label(Sprite, Graphic):
         self._render()
 
     def set_position(self, position: tuple[int, int], anchor: str=None):
+        """
+        Anchor can be:
+        topleft, bottomleft, topright, bottomright
+        midtop, midleft, midbottom, midright
+        center
+        """
         self.position = position
         if anchor:
             self.anchor = anchor
