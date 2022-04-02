@@ -39,9 +39,7 @@ class Alignment:
 
 class Graphic_Event:
     def __init__(self) -> None:
-        if not EventManager.INSTANCE:
-            EventManager()
-        EventManager.INSTANCE.add_managed_object(self)
+        EventManager.instance.add_managed_object(self)
 
     @abstractmethod
     def handle_event(self, event: pygame.event.Event) -> None:
@@ -52,15 +50,23 @@ class EventManager:
     INSTANCE = None
 
     def __init__(self, call_backs: Callable | list[Callable]=None, on_quit: Callable=None) -> None:
-        self._singleton()
+        EventManager._singleton(self)
         self.set_events()
 
-    def _singleton(self):
-        if EventManager.INSTANCE:
-            self.update_managed_objects(EventManager.INSTANCE.graphic_events)
+    @classmethod
+    @property
+    def instance(cls):
+        if not cls.INSTANCE:
+            EventManager()
+        return cls.INSTANCE
+
+    @classmethod
+    def _singleton(cls, instance):
+        if cls.INSTANCE:
+            instance.update_managed_objects(cls.INSTANCE.graphic_events)
         else:
-            self.graphic_events = []
-        EventManager.INSTANCE = self
+            instance.graphic_events = []
+        cls.INSTANCE = instance
 
     def set_events(self, call_backs: Callable | list[Callable]=None, on_quit: Callable=None) -> None:
         if call_backs:
@@ -100,9 +106,7 @@ class EventManager:
 
 class Graphic:
     def __init__(self) -> None:
-        if not Canvas.INSTANCE:
-            Canvas()
-        Canvas.INSTANCE.add_managed_object(self)
+        Canvas.instance.add_managed_object(self)
 
     @abstractmethod
     def draw(self, surface: pygame.Surface):
@@ -116,6 +120,13 @@ class Canvas:
 
         self.main_surface = pygame.display.get_surface()
         self.graphic_elements = []
+
+    @classmethod
+    @property
+    def instance(cls):
+        if not cls.INSTANCE:
+            Canvas()
+        return cls.INSTANCE
 
     def _singleton(self):
         if Canvas.INSTANCE:
