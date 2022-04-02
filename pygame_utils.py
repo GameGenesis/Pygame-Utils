@@ -207,7 +207,8 @@ class Label(Sprite, Graphic):
 
 
 class InputBox(Label, Graphic_Event):
-    def __init__(self, on_value_change: Optional[Callable]=None, 
+    def __init__(self, on_value_change: Optional[Callable]=None, on_delete: Optional[Callable]=None, 
+    on_submit: Optional[Callable]=None, on_select: Optional[Callable]=None, 
     position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 35), 
     box_color: pygame.Color | tuple[int, int, int]=(255, 255, 255), border_thickness: int=2, 
     border_color_active: pygame.Color | tuple[int, int, int]=(20, 20, 20), 
@@ -223,38 +224,51 @@ class InputBox(Label, Graphic_Event):
         self.border_color_active = border_color_active
         self.border_color_inactive = border_color_inactive
         self.active = False
-        self.func = on_value_change
+        self.on_value_change = on_value_change
+        self.on_delete = on_delete
+        self.on_submit = on_submit
+        self.on_select = on_select
 
     def draw(self, surface: pygame.Surface):
+        # Overflow
         self.rect.w = max(self.size.x, self.image.get_width()+10)
+        # Draw text and rect
         surface.blit(self.image, (self.rect.x+5, self.rect.y + self.rect.height/4))
         pygame.draw.rect(surface, self.border_color, self.rect, self.border_thickness)
 
-    def handle_event(self, event):
+    def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.MOUSEBUTTONDOWN:
-            # If the user clicked on the input_box rect.
+            # If the user clicked on the input_box rect
             if self.rect.collidepoint(event.pos):
-                # Toggle the active variable.
+                self.call_back(self.on_select)
+                # Toggle the active variable
                 self.active = not self.active
             else:
                 self.active = False
-            # Change the current color of the input box.
-            self.border_color = self.border_color_active if self.active else self.border_color_inactive
+            # Change the current color of the input box
+            self.set_border_state()
         if event.type == pygame.KEYDOWN:
             if self.active:
                 if event.key == pygame.K_RETURN:
-                    print(self.text)
+                    self.call_back(self.on_submit)
                     self.text = ""
+                    self.active = False
+                    self.set_border_state()
                 elif event.key == pygame.K_BACKSPACE:
+                    self.call_back(self.on_delete)
                     self.text = self.text[:-1]
                 else:
+                    self.call_back(self.on_value_change)
                     self.text += event.unicode
-                # Re-render the text.
+                # Re-render the text
                 self._render()
 
-    def call_back(self, *args):
-        if self.func:
-            return self.func(*args)
+    def set_border_state(self):
+        self.border_color = self.border_color_active if self.active else self.border_color_inactive
+
+    def call_back(self, func, *args):
+        if func:
+            return func(self.text, *args)
 
 
 class Shape(object):
