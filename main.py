@@ -83,12 +83,12 @@ def main():
         delta_time = (t - t_last) / 1000.0
 
         # Moving 200 pixels per second in the positive x direction
-        circle.move(circle.pos.x + current_velocity[0] * delta_time, circle.pos.y + current_velocity[1] * delta_time)
+        circle.move(circle.position.x + current_velocity[0] * delta_time, circle.position.y + current_velocity[1] * delta_time)
 
         if current_velocity != [0, 0]:
-            if circle.pos.x + circle.radius/2 >= main_surface.get_width() or circle.pos.x - circle.radius/2 <= 0:
+            if circle.position.x + circle.radius/2 >= main_surface.get_width() or circle.position.x - circle.radius/2 <= 0:
                 current_velocity[0] *= -1
-            if circle.pos.y + circle.radius/2 >= main_surface.get_height() or circle.pos.y - circle.radius/2 <= 0:
+            if circle.position.y + circle.radius/2 >= main_surface.get_height() or circle.position.y - circle.radius/2 <= 0:
                 current_velocity[1] *= -1
 
         #-----------------------------Drawing Everything-------------------------------------#
