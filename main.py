@@ -42,10 +42,10 @@ def main():
     button = Button(position=Vector2(25, 25), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False, label_alignment=Alignment.CENTER)
     check_box = CheckBox(position=Vector2(25, surface_size[1] - 75), on_value_change=toggle_color)
     input_box = InputBox(position=Vector2(surface_size[0] - 200, surface_size[1] - 75), on_submit=set_score)
-    EventManager.instance.set_events(toggle_velocity, on_quit=lambda: JsonSave.save("save_data.json", "Score", score))
+    EventManager.set_events(toggle_velocity, on_quit=lambda: JsonSave.save("save_data.json", "Score", score))
 
     while True:
-        EventManager.instance.handle_events()
+        EventManager.handle_events()
 
         # Current frame ticks in ms
         t = pygame.time.get_ticks()
@@ -66,7 +66,7 @@ def main():
 
         # UI Elements
         score_text.set_text(score)
-        Canvas.INSTANCE.draw()
+        Canvas.draw()
 
         pygame.display.flip()
 

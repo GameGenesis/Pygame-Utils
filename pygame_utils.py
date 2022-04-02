@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any, Callable, Type
+from typing import Any, Callable
 
 import gc
 import sys
@@ -39,7 +39,7 @@ class Alignment:
 
 class Graphic_Event:
     def __init__(self) -> None:
-        EventManager.instance.add_managed_object(self)
+        EventManager.add_managed_object(self)
 
     @abstractmethod
     def handle_event(self, event: pygame.event.Event) -> None:
@@ -47,66 +47,51 @@ class Graphic_Event:
 
 
 class EventManager:
-    INSTANCE = None
-
-    def __init__(self, call_backs: Callable | list[Callable]=None, on_quit: Callable=None) -> None:
-        EventManager._singleton(self)
-        self.set_events()
+    on_quit = None
+    funcs = []
+    graphic_events = []
 
     @classmethod
-    @property
-    def instance(cls):
-        if not cls.INSTANCE:
-            EventManager()
-        return cls.INSTANCE
+    def update_managed_objects(cls, graphic_events: list[Graphic_Event]):
+        cls.graphic_events = graphic_events
 
     @classmethod
-    def _singleton(cls, instance):
-        if cls.INSTANCE:
-            instance.update_managed_objects(cls.INSTANCE.graphic_events)
-        else:
-            instance.graphic_events = []
-        cls.INSTANCE = instance
+    def add_managed_object(cls, graphic_event: Graphic_Event):
+        cls.graphic_events.append(graphic_event)
 
-    def set_events(self, call_backs: Callable | list[Callable]=None, on_quit: Callable=None) -> None:
+    @classmethod
+    def set_events(cls, call_backs: Callable | list[Callable]=None, on_quit: Callable=None) -> None:
         if call_backs:
             if type(call_backs) == list:
-                self.funcs = call_backs
+                cls.funcs = call_backs
             else:
-                self.funcs = [call_backs]
-        else:
-            if not hasattr(self, 'funcs'):
-                self.funcs = []
+                cls.funcs = [call_backs]
 
-        self.on_quit = on_quit
+        cls.on_quit = on_quit
 
-    def add_event(self, call_back: Callable | list[Callable]):
-        self.funcs.append(call_back)
+    @classmethod
+    def add_event(cls, call_back: Callable | list[Callable]):
+        cls.funcs.append(call_back)
 
-    def update_managed_objects(self, graphic_events: list[Graphic_Event]):
-        self.graphic_events = graphic_events
-
-    def add_managed_object(self, graphic_event: Type[Graphic_Event]):
-        self.graphic_events.append(graphic_event)
-
-    def handle_events(self) -> None:
+    @classmethod
+    def handle_events(cls) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                if self.on_quit:
-                    self.on_quit()
+                if cls.on_quit:
+                    cls.on_quit()
                 pygame.quit()
                 sys.exit()
-            for func in self.funcs:
+            for func in cls.funcs:
                 func(event)
-            if not self.graphic_events:
+            if not cls.graphic_events:
                 continue
-            for ge in self.graphic_events:
+            for ge in cls.graphic_events:
                 ge.handle_event(event)
 
 
 class Graphic:
     def __init__(self) -> None:
-        Canvas.instance.add_managed_object(self)
+        Canvas.add_managed_object(self)
 
     @abstractmethod
     def draw(self, surface: pygame.Surface):
@@ -114,44 +99,33 @@ class Graphic:
 
 
 class Canvas:
-    INSTANCE = None
-    def __init__(self) -> None:
-        self._singleton()
-
-        self.main_surface = pygame.display.get_surface()
-        self.graphic_elements = []
+    main_surface = None
+    graphic_elements = []
 
     @classmethod
-    @property
-    def instance(cls):
-        if not cls.INSTANCE:
-            Canvas()
-        return cls.INSTANCE
-
-    def _singleton(self):
-        if Canvas.INSTANCE:
-            del self
-            return
-        Canvas.INSTANCE = self
-
-    def find_managed_objects(self):
+    def find_managed_objects(cls):
         """
         Deprecated
         """
-        self.graphic_elements = [obj for obj in gc.get_objects() if isinstance(obj, Graphic)]
+        cls.graphic_elements = [obj for obj in gc.get_objects() if isinstance(obj, Graphic)]
         print("This method is deprecated. You do not need to manually get managed objects!")
 
-    def update_managed_objects(self, graphic_elements: list[Graphic]):
-        self.graphic_elements = graphic_elements
+    @classmethod
+    def update_managed_objects(cls, graphic_elements: list[Graphic]):
+        cls.graphic_elements = graphic_elements
 
-    def add_managed_object(self, graphic: Type[Graphic]):
-        self.graphic_elements.append(graphic)
+    @classmethod
+    def add_managed_object(cls, graphic: Graphic):
+        cls.graphic_elements.append(graphic)
 
-    def draw(self) -> None:
-        if not self.graphic_elements:
+    @classmethod
+    def draw(cls) -> None:
+        if not cls.graphic_elements:
             return
-        for graphic in self.graphic_elements:
-            graphic.draw(self.main_surface)
+        if not cls.main_surface:
+            cls.main_surface = pygame.display.get_surface()
+        for graphic in cls.graphic_elements:
+            graphic.draw(cls.main_surface)
 
 
 class Panel(Graphic):
@@ -178,7 +152,7 @@ class Panel(Graphic):
 
 class Label(Graphic):
     def __init__(self, text: str | Any, color: pygame.Color | tuple[int, int, int]=(255, 255, 255),
-    font_name: str=None, font_size: int=28, position: tuple[int, int]=(0, 0), anchor: Type[Alignment] | str="midleft"):
+    font_name: str=None, font_size: int=28, position: tuple[int, int]=(0, 0), anchor: Alignment | str="midleft"):
         super().__init__()
         self.font = pygame.font.Font(font_name, font_size)
         self.text = str(text)
@@ -210,7 +184,7 @@ class Label(Graphic):
         self.color = color
         self._render()
 
-    def set_position(self, position: tuple[int, int], anchor: Type[Alignment] | str=None):
+    def set_position(self, position: tuple[int, int], anchor: Alignment | str=None):
         """
         Anchor can be:
         topleft, bottomleft, topright, bottomright
@@ -229,7 +203,7 @@ class Button(Graphic, Graphic_Event):
     position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 75),
     color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220),
     pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165),
-    border_radius: int=0, disabled: bool=False, label: Type[Label]=None, label_alignment: Type[Alignment] | str="center") -> None:
+    border_radius: int=0, disabled: bool=False, label: Label=None, label_alignment: Alignment | str="center") -> None:
         Graphic.__init__(self)
         Graphic_Event.__init__(self)
         self.func = on_click
@@ -336,7 +310,7 @@ class CheckBox(Button):
     color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220),
     pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165),
     tick_color: pygame.Color | tuple[int, int, int]=(55, 55, 55), is_on: bool=False,
-    border_radius: int=0, disabled: bool=False, label_alignment: Type[Alignment] | str="midleft") -> None:
+    border_radius: int=0, disabled: bool=False, label_alignment: Alignment | str="midleft") -> None:
         super().__init__(on_value_change, position, size, color, hover_color, pressed_color, disabled_color,
         border_radius, disabled, None, label_alignment)
         self.tick_color = tick_color
