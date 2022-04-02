@@ -181,14 +181,14 @@ class Label(Sprite, Graphic):
 
     def _render(self):
         self.image = self.font.render(self.text, True, self.color)
-        self.rect = self.image.get_rect(**{self.anchor: self.position})
+        self.text_rect = self.image.get_rect(**{self.anchor: self.position})
 
     def clip(self, rect: pygame.Rect):
         self.image = self.image.subsurface(rect)
-        self.rect = self.image.get_rect(**{self.anchor: self.position})
+        self.text_rect = self.image.get_rect(**{self.anchor: self.position})
 
     def draw(self, surface: pygame.Surface):
-        surface.blit(self.image, self.rect)
+        surface.blit(self.image, self.text_rect)
 
     def set_text(self, text: str):
         self.text = str(text)
@@ -207,7 +207,30 @@ class Label(Sprite, Graphic):
         if anchor:
             self.anchor = anchor
 
-        self.rect = self.image.get_rect(**{self.anchor: self.position})
+        self.text_rect = self.image.get_rect(**{self.anchor: self.position})
+
+
+class InputBox(Label):
+    def __init__(self, on_value_change: Optional[Callable]=None, 
+    position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 35), 
+    box_color: pygame.Color | tuple[int, int, int]=(255, 255, 255), 
+    border_thickness: int=2, border_color: pygame.Color | tuple[int, int, int]=(20, 20, 20), 
+    text_color: pygame.Color | tuple[int, int, int]=(20, 20, 20), text: str | Any="", font_name: str=None, font_size: int=28):
+        super().__init__(text, text_color, font_name, font_size, position)
+        self.rect = pygame.Rect(position, size)
+        self.box_color = box_color
+        self.border_thickness = border_thickness
+        self.border_color = border_color
+        self.active = False
+        self.func = on_value_change
+
+    def draw(self, surface: pygame.Surface):
+        surface.blit(self.image, (self.rect.x+5, self.rect.y+5))
+        pygame.draw.rect(surface, self.color, self.rect, self.border_thickness)
+
+    def call_back(self, *args):
+        if self.func:
+            return self.func(*args)
 
 
 class Shape(object):
