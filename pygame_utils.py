@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Callable, Type
 
 import gc
@@ -38,7 +38,19 @@ class Alignment:
     CENTER = "center"
 
 
+class Graphic_Event:
+    def __init__(self) -> None:
+        if EventManager.INSTANCE:
+            EventManager.INSTANCE.add_managed_object(self)
+
+    @abstractmethod
+    def handle_event(self, event: pygame.event.Event) -> None:
+        ...
+
+
 class EventManager:
+    INSTANCE = None
+
     def __init__(self, call_backs: Callable | list[Callable]=None, on_quit: Callable=None) -> None:
         if call_backs:
             if type(call_backs) == list:
@@ -49,7 +61,13 @@ class EventManager:
             self.funcs = []
 
         self.on_quit = on_quit
+        self.update_managed_objects()
+
+    def update_managed_objects(self):
         self.graphic_events = [obj for obj in gc.get_objects() if isinstance(obj, Graphic_Event)]
+
+    def add_managed_object(self, graphic_event: Type[Graphic_Event]):
+        self.graphic_elements.append(graphic_event)
 
     def handle_events(self) -> None:
         for event in pygame.event.get():
@@ -64,34 +82,38 @@ class EventManager:
                 ge.handle_event(event)
 
 
+class Graphic:
+    def __init__(self) -> None:
+        if Canvas.INSTANCE:
+            Canvas.INSTANCE.add_managed_object(self)
+
+    @abstractmethod
+    def draw(self, surface: pygame.Surface):
+        ...
+
+
 class Canvas:
+    INSTANCE = None
+
     def __init__(self, main_surface: pygame.Surface) -> None:
         self.main_surface = main_surface
-        self.graphic_elements = []
-        for obj in gc.get_objects():
-            if isinstance(obj, Graphic):
-                self.graphic_elements.append(obj)
+        self.update_managed_objects()
+
+    def update_managed_objects(self):
+        self.graphic_elements = [obj for obj in gc.get_objects() if isinstance(obj, Graphic)]
+
+    def add_managed_object(self, graphic: Type[Graphic]):
+        self.graphic_elements.append(graphic)
 
     def draw(self) -> None:
         for graphic in self.graphic_elements:
             graphic.draw(self.main_surface)
 
 
-class Graphic(ABC):
-    @abstractmethod
-    def draw(self, surface: pygame.Surface):
-        ...
-
-
-class Graphic_Event(ABC):
-    @abstractmethod
-    def handle_event(self, event: pygame.event.Event) -> None:
-        ...
-
-
 class Panel(Graphic):
     def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=None,
     color: pygame.Color | tuple[int, int, int, int]=(80, 80, 80, 100)) -> None:
+        super().__init__()
         self.position = position
         self.size = size
         self.color = color
@@ -110,7 +132,7 @@ class Panel(Graphic):
         surface.blit(self.panel_surface, self.position)
 
 
-class Label(Sprite, Graphic):
+class Label(Graphic):
     def __init__(self, text: str | Any, color: pygame.Color | tuple[int, int, int]=(255, 255, 255),
     font_name: str=None, font_size: int=28, position: tuple[int, int]=(0, 0), anchor: Type[Alignment] | str="midleft"):
         super().__init__()
@@ -164,6 +186,8 @@ class Button(Graphic, Graphic_Event):
     color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220),
     pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165),
     border_radius: int=0, disabled: bool=False, label: Type[Label]=None, label_alignment: Type[Alignment] | str="center") -> None:
+        Graphic.__init__(self)
+        Graphic_Event.__init__(self)
         self.func = on_click
         self.position = position
         self.size = size
@@ -294,6 +318,7 @@ class InputBox(Label, Graphic_Event):
     border_color_inactive: pygame.Color | tuple[int, int, int]=(100, 100, 100),
     text_color: pygame.Color | tuple[int, int, int]=(20, 20, 20), text: str | Any="", font_name: str=None, font_size: int=28):
         super().__init__(text, text_color, font_name, font_size, position)
+        Graphic_Event.__init__(self)
         self.rect = pygame.Rect(position, size)
         self.position = position
         self.size = size
