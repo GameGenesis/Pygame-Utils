@@ -5,7 +5,6 @@ import gc
 import sys
 
 import pygame
-from pygame.sprite import Sprite
 from pygame.math import Vector2
 
 
@@ -40,8 +39,9 @@ class Alignment:
 
 class Graphic_Event:
     def __init__(self) -> None:
-        if EventManager.INSTANCE:
-            EventManager.INSTANCE.add_managed_object(self)
+        if not EventManager.INSTANCE:
+            EventManager()
+        EventManager.INSTANCE.add_managed_object(self)
 
     @abstractmethod
     def handle_event(self, event: pygame.event.Event) -> None:
@@ -52,6 +52,12 @@ class EventManager:
     INSTANCE = None
 
     def __init__(self, call_backs: Callable | list[Callable]=None, on_quit: Callable=None) -> None:
+        if EventManager.INSTANCE:
+            self.update_managed_objects(EventManager.INSTANCE.graphic_events)
+        else:
+            self.graphic_events = []
+        EventManager.INSTANCE = self
+
         if call_backs:
             if type(call_backs) == list:
                 self.funcs = call_backs
@@ -61,13 +67,12 @@ class EventManager:
             self.funcs = []
 
         self.on_quit = on_quit
-        self.update_managed_objects()
 
-    def update_managed_objects(self):
-        self.graphic_events = [obj for obj in gc.get_objects() if isinstance(obj, Graphic_Event)]
+    def update_managed_objects(self, graphic_events: list[Graphic_Event]):
+        self.graphic_events = graphic_events
 
     def add_managed_object(self, graphic_event: Type[Graphic_Event]):
-        self.graphic_elements.append(graphic_event)
+        self.graphic_events.append(graphic_event)
 
     def handle_events(self) -> None:
         for event in pygame.event.get():
@@ -78,14 +83,17 @@ class EventManager:
                 sys.exit()
             for func in self.funcs:
                 func(event)
+            if not self.graphic_events:
+                continue
             for ge in self.graphic_events:
                 ge.handle_event(event)
 
 
 class Graphic:
     def __init__(self) -> None:
-        if Canvas.INSTANCE:
-            Canvas.INSTANCE.add_managed_object(self)
+        if not Canvas.INSTANCE:
+            Canvas()
+        Canvas.INSTANCE.add_managed_object(self)
 
     @abstractmethod
     def draw(self, surface: pygame.Surface):
@@ -94,18 +102,31 @@ class Graphic:
 
 class Canvas:
     INSTANCE = None
+    def __init__(self) -> None:
+        if Canvas.INSTANCE:
+            del self
+            return
+        Canvas.INSTANCE = self
 
-    def __init__(self, main_surface: pygame.Surface) -> None:
-        self.main_surface = main_surface
-        self.update_managed_objects()
+        self.main_surface = pygame.display.get_surface()
+        self.graphic_elements = []
 
-    def update_managed_objects(self):
+    def find_managed_objects(self):
+        """
+        Deprecated
+        """
         self.graphic_elements = [obj for obj in gc.get_objects() if isinstance(obj, Graphic)]
+        print("This method is deprecated. You do not need to manually get managed objects!")
+
+    def update_managed_objects(self, graphic_elements: list[Graphic]):
+        self.graphic_elements = graphic_elements
 
     def add_managed_object(self, graphic: Type[Graphic]):
         self.graphic_elements.append(graphic)
 
     def draw(self) -> None:
+        if not self.graphic_elements:
+            return
         for graphic in self.graphic_elements:
             graphic.draw(self.main_surface)
 
