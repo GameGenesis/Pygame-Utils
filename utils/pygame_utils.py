@@ -128,6 +128,40 @@ class Canvas:
             graphic.draw(cls.main_surface)
 
 
+class UiImage(Graphic):
+    def __init__(self, image_surface: pygame.surface=None, file_name: str=None, position: Vector2=Vector2(0, 0), size: Vector2=None,
+    color_tint: pygame.Color | tuple[int, int, int, int]=(255, 255, 255, 255)) -> None:
+        """
+        Specify either the image surface or the image path, not both.
+        """
+        super().__init__()
+        self.position = position
+        self.size = size
+        self.color_tint = color_tint
+
+        self.image_surface = None
+        self.set_image(image_surface, file_name)
+
+    def get_image(self) -> pygame.Surface:
+        return self.image_surface
+
+    def set_image(self, image_surface: pygame.surface=None, file_name: str=None) -> pygame.Surface:
+        if image_surface:
+            self.image_surface = image_surface
+        else:
+            if file_name:
+                self.image_surface = pygame.image.load(file_name)
+        self.scale_image()
+
+    def scale_image(self):
+        if self.size:
+            self.image_surface = pygame.transform.scale(self.image_surface, self.size)
+
+    def draw(self, surface: pygame.Surface):
+        if self.image_surface:
+            surface.blit(self.image_surface, self.position)
+
+
 class Panel(Graphic):
     def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=None,
     color: pygame.Color | tuple[int, int, int, int]=(80, 80, 80, 100)) -> None:
