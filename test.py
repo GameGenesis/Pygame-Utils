@@ -30,15 +30,14 @@ def main():
     pygame.display.set_caption("Game")
     main_surface = pygame.display.set_mode(surface_size)
 
-    t_last = 0
-
     circle = Circle(Vector2(20, 20), 20, Color.RED)
 
     def toggle_color(on):
         circle.color = Color.BLUE if on else Color.RED
 
     panel = Panel()
-    score_text = Label(font_size=60, text=score, position=Vector2(surface_size[0] - 25, 35), anchor=Alignment.TOP_RIGHT)
+    fps_text = Label(position=Vector2(surface_size[0]-25, 20), color=Color.BLACK, anchor=Alignment.MID_RIGHT)
+    score_text = Label(font_size=60, text=score, position=Vector2(surface_size[0] - 25, 40), anchor=Alignment.TOP_RIGHT)
     button = Button(position=Vector2(25, 25), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False, label_alignment=Alignment.CENTER)
     check_box = CheckBox(position=Vector2(25, surface_size[1] - 75), on_value_change=toggle_color)
     input_box = InputBox(position=Vector2(surface_size[0] - 200, surface_size[1] - 75), on_submit=set_score)
@@ -46,12 +45,8 @@ def main():
     EventManager.set_events(toggle_velocity, on_quit=lambda: JsonSave.save("save_data.json", "Score", score))
 
     while True:
+        delta_time = float(clock.tick(60)) / 1000.0
         EventManager.handle_events()
-
-        # Current frame ticks in ms
-        t = pygame.time.get_ticks()
-        # DeltaTime in seconds
-        delta_time = (t - t_last) / 1000.0
 
         # Moving 200 pixels per second in the positive x direction
         circle.move(circle.position.x + current_velocity[0] * delta_time, circle.position.y + current_velocity[1] * delta_time)
@@ -66,14 +61,11 @@ def main():
         circle.draw(main_surface)
 
         # UI Elements
+        fps_text.set_text(f"FPS: {int(clock.get_fps())}")
         score_text.set_text(score)
         Canvas.draw()
 
         pygame.display.update()
 
-        clock.tick(60)
-
         # Storing the last frame ticks
-        t_last = t
-
 main()

@@ -192,7 +192,7 @@ class Panel(Graphic):
 
 
 class Label(Graphic):
-    def __init__(self, text: str | Any, color: pygame.Color | tuple[int, int, int]=(255, 255, 255),
+    def __init__(self, text: str | Any="", color: pygame.Color | tuple[int, int, int]=(255, 255, 255),
     font_name: str=None, font_size: int=28, position: Vector2=Vector2(0, 0), anchor: Alignment | str="midleft"):
         super().__init__()
         self.font = pygame.font.Font(font_name, font_size)
