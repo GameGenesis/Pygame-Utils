@@ -158,6 +158,7 @@ class UiImage(Graphic):
     def scale_image(self):
         if self.size:
             self.image_surface = pygame.transform.scale(self.image_surface, self.size)
+            self.og_image_surface = self.image_surface.copy()
     
     def tint_image(self, color: pygame.Color | tuple[int, int, int, int], blend_mode: int=pygame.BLEND_RGBA_MULT):
         self.image_surface = self.og_image_surface.copy()
@@ -192,7 +193,7 @@ class Panel(Graphic):
 
 class Label(Graphic):
     def __init__(self, text: str | Any, color: pygame.Color | tuple[int, int, int]=(255, 255, 255),
-    font_name: str=None, font_size: int=28, position: tuple[int, int]=(0, 0), anchor: Alignment | str="midleft"):
+    font_name: str=None, font_size: int=28, position: Vector2=Vector2(0, 0), anchor: Alignment | str="midleft"):
         super().__init__()
         self.font = pygame.font.Font(font_name, font_size)
         self.text = str(text)
@@ -249,6 +250,8 @@ class Button(Graphic, Graphic_Event):
         self.button_image = image
         if self.button_image:
             self.button_image.position = position
+            self.button_image.size = size
+            self.button_image.scale_image()
             self.rect = image.get_image().get_rect(topleft=position)
         else:
             self.rect = pygame.Rect(position, size)
