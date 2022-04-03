@@ -130,7 +130,7 @@ class Canvas:
 
 class UiImage(Graphic):
     def __init__(self, image_surface: pygame.surface=None, file_name: str=None, position: Vector2=Vector2(0, 0), size: Vector2=None,
-    color_tint: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
+    color_tint: pygame.Color | tuple[int, int, int, int]=(255, 255, 255, 255), blend_mode: int=pygame.BLEND_RGBA_MULT) -> None:
         """
         Specify either the image surface or the image path, not both.
         """
@@ -141,7 +141,7 @@ class UiImage(Graphic):
 
         self.image_surface = None
         self.set_image(image_surface, file_name)
-        self.tint_image(color_tint)
+        self.tint_image(color_tint, blend_mode)
 
     def get_image(self) -> pygame.Surface:
         return self.image_surface
@@ -153,13 +153,15 @@ class UiImage(Graphic):
             if file_name:
                 self.image_surface = pygame.image.load(file_name)
         self.scale_image()
+        self.og_image_surface = self.image_surface.copy()
 
     def scale_image(self):
         if self.size:
             self.image_surface = pygame.transform.scale(self.image_surface, self.size)
     
-    def tint_image(self, color: pygame.Color | tuple[int, int, int, int]):
-        self.image_surface.fill(color, special_flags=pygame.BLEND_ADD)
+    def tint_image(self, color: pygame.Color | tuple[int, int, int, int], blend_mode: int=pygame.BLEND_RGBA_MULT):
+        self.image_surface = self.og_image_surface.copy()
+        self.image_surface.fill(color, special_flags=blend_mode)
 
     def draw(self, surface: pygame.Surface):
         if self.image_surface:
@@ -253,7 +255,7 @@ class Button(Graphic, Graphic_Event):
         self.func = on_click
         self.position = position
         self.size = size
-        self.current_color = color
+        self.set_color(color)
         self.color = color
         self.hover_color = hover_color
         self.pressed_color = pressed_color
@@ -267,9 +269,14 @@ class Button(Graphic, Graphic_Event):
             self.label._render()
         self.set_label_pos()
 
+    def set_color(self, color: pygame.Color | tuple[int, int, int]):
+        self.current_color = color
+        if self.button_image:
+            self.button_image.tint_image(self.current_color)
+
     def set_disabled(self, disabled: bool=True):
         self.disabled = disabled
-        self.current_color = self.disabled_color
+        self.set_color(self.disabled_color)
 
     def set_label_pos(self):
         """
@@ -319,10 +326,10 @@ class Button(Graphic, Graphic_Event):
     def mouseover(self):
         if self.disabled or self.pressed:
             return
-        self.current_color = self.color
+        self.set_color(self.color)
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(pos):
-            self.current_color = self.hover_color
+            self.set_color(self.hover_color)
 
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -341,7 +348,7 @@ class Button(Graphic, Graphic_Event):
 
     def button_press(self):
         self.pressed = True
-        self.current_color = self.pressed_color
+        self.set_color(self.pressed_color)
 
     def button_release(self):
         self.pressed = False
