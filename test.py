@@ -42,7 +42,7 @@ def main():
     button = Button(position=Vector2(25, 25), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False, label_alignment=Alignment.CENTER)
     check_box = CheckBox(position=Vector2(25, surface_size[1] - 75), on_value_change=toggle_color)
     input_box = InputBox(position=Vector2(surface_size[0] - 200, surface_size[1] - 75), on_submit=set_score)
-    image = UiImage(file_name="images/Present_64px.png", position=Vector2(surface_size[0] - 25, 35))
+    button2 = Button(image=UiImage(file_name="images/Present_64px.png"), position=Vector2(surface_size[0] - 25, 35), on_click=increment_score)
     EventManager.set_events(toggle_velocity, on_quit=lambda: JsonSave.save("save_data.json", "Score", score))
 
     while True:

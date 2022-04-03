@@ -130,7 +130,7 @@ class Canvas:
 
 class UiImage(Graphic):
     def __init__(self, image_surface: pygame.surface=None, file_name: str=None, position: Vector2=Vector2(0, 0), size: Vector2=None,
-    color_tint: pygame.Color | tuple[int, int, int, int]=(255, 255, 255, 255)) -> None:
+    color_tint: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
         """
         Specify either the image surface or the image path, not both.
         """
@@ -141,6 +141,7 @@ class UiImage(Graphic):
 
         self.image_surface = None
         self.set_image(image_surface, file_name)
+        self.tint_image(color_tint)
 
     def get_image(self) -> pygame.Surface:
         return self.image_surface
@@ -156,6 +157,9 @@ class UiImage(Graphic):
     def scale_image(self):
         if self.size:
             self.image_surface = pygame.transform.scale(self.image_surface, self.size)
+    
+    def tint_image(self, color: pygame.Color | tuple[int, int, int, int]):
+        self.image_surface.fill(color, special_flags=pygame.BLEND_ADD)
 
     def draw(self, surface: pygame.Surface):
         if self.image_surface:
@@ -233,17 +237,22 @@ class Label(Graphic):
 
 
 class Button(Graphic, Graphic_Event):
-    def __init__(self, on_click: Callable=None,
+    def __init__(self, image: UiImage=None, on_click: Callable=None,
     position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 75),
     color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220),
     pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165),
     border_radius: int=0, disabled: bool=False, label: Label=None, label_alignment: Alignment | str="center") -> None:
         Graphic.__init__(self)
         Graphic_Event.__init__(self)
+        self.button_image = image
+        if self.button_image:
+            self.button_image.position = position
+            self.rect = image.get_image().get_rect(topleft=position)
+        else:
+            self.rect = pygame.Rect(position, size)
         self.func = on_click
         self.position = position
         self.size = size
-        self.rect = pygame.Rect(position, size)
         self.current_color = color
         self.color = color
         self.hover_color = hover_color
@@ -299,7 +308,11 @@ class Button(Graphic, Graphic_Event):
 
     def draw(self, surface: pygame.Surface):
         self.mouseover()
-        pygame.draw.rect(surface, self.current_color, self.rect, border_radius=self.border_radius)
+        if self.button_image:
+            self.button_image.draw(surface)
+        else:
+            pygame.draw.rect(surface, self.current_color, self.rect, border_radius=self.border_radius)
+
         if self.label:
             self.label.draw(surface)
 
@@ -345,7 +358,7 @@ class CheckBox(Button):
     pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165),
     tick_color: pygame.Color | tuple[int, int, int]=(55, 55, 55), is_on: bool=False,
     border_radius: int=0, disabled: bool=False, label_alignment: Alignment | str="midleft") -> None:
-        super().__init__(on_value_change, position, size, color, hover_color, pressed_color, disabled_color,
+        super().__init__(None, on_value_change, position, size, color, hover_color, pressed_color, disabled_color,
         border_radius, disabled, None, label_alignment)
         self.tick_color = tick_color
         self.is_on = is_on
