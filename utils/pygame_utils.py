@@ -151,7 +151,7 @@ class UiImage(Graphic):
             self.image_surface = image_surface
         else:
             if file_name:
-                self.image_surface = pygame.image.load(file_name)
+                self.image_surface = pygame.image.load(file_name).convert_alpha()
         self.scale_image()
         self.og_image_surface = self.image_surface.copy()
 

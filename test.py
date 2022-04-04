@@ -4,8 +4,12 @@ from utils.json_save import JsonSave
 
 from utils.pygame_utils import Alignment, Button, Canvas, CheckBox, EventManager, InputBox, Label, Panel, Square, Circle, Color, UiImage
 
-velocity = [400, 400]
-current_velocity = velocity
+FPS = 60
+WINDOW_SIZE = (480, 720)
+
+VELOCITY = [400, 400]
+current_velocity = VELOCITY
+
 score = JsonSave.load("save_data.json", "Score", 0)
 
 def set_score(value):
@@ -17,18 +21,17 @@ def increment_score(value=1):
     score += value
 
 def toggle_velocity(event):
-    global velocity, current_velocity
+    global VELOCITY, current_velocity
     if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-        current_velocity = [0, 0] if current_velocity != [0, 0] else velocity
+        current_velocity = [0, 0] if current_velocity != [0, 0] else VELOCITY
 
 def main():
     pygame.init()
-    surface_size = (480, 720)
 
     clock = pygame.time.Clock()
 
     pygame.display.set_caption("Game")
-    main_surface = pygame.display.set_mode(surface_size)
+    main_surface = pygame.display.set_mode(WINDOW_SIZE)
 
     circle = Circle(Vector2(20, 20), 20, Color.RED)
 
@@ -36,16 +39,16 @@ def main():
         circle.color = Color.BLUE if on else Color.RED
 
     panel = Panel()
-    fps_text = Label(position=Vector2(surface_size[0]-25, 20), color=Color.BLACK, anchor=Alignment.MID_RIGHT)
-    score_text = Label(font_size=60, text=score, position=Vector2(surface_size[0] - 25, 40), anchor=Alignment.TOP_RIGHT)
+    fps_text = Label(position=Vector2(WINDOW_SIZE[0]-25, 20), color=Color.BLACK, anchor=Alignment.MID_RIGHT)
+    score_text = Label(font_size=60, text=score, position=Vector2(WINDOW_SIZE[0] - 25, 40), anchor=Alignment.TOP_RIGHT)
     button = Button(position=Vector2(25, 25), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False, label_alignment=Alignment.CENTER)
-    check_box = CheckBox(position=Vector2(25, surface_size[1] - 75), on_value_change=toggle_color)
-    input_box = InputBox(position=Vector2(surface_size[0] - 200, surface_size[1] - 75), on_submit=set_score)
-    button2 = Button(image=UiImage(file_name="images/Present_64px.png"), size=Vector2(150, 150), position=Vector2(surface_size[0]/2 - 75, surface_size[1]/2 - 75), on_click=increment_score)
+    check_box = CheckBox(position=Vector2(25, WINDOW_SIZE[1] - 75), on_value_change=toggle_color)
+    input_box = InputBox(position=Vector2(WINDOW_SIZE[0] - 200, WINDOW_SIZE[1] - 75), on_submit=set_score)
+    button2 = Button(image=UiImage(file_name="images/Present_64px.png"), size=Vector2(150, 150), position=Vector2(WINDOW_SIZE[0]/2 - 75, WINDOW_SIZE[1]/2 - 75), on_click=increment_score)
     EventManager.set_events(toggle_velocity, on_quit=lambda: JsonSave.save("save_data.json", "Score", score))
 
     while True:
-        delta_time = float(clock.tick(60)) / 1000.0
+        delta_time = float(clock.tick(FPS)) / 1000.0
         EventManager.handle_events()
 
         # Moving 200 pixels per second in the positive x direction
