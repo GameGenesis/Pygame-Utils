@@ -31,6 +31,11 @@ def toggle_velocity(event):
     if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
         current_velocity = [0, 0] if current_velocity != [0, 0] else VELOCITY
 
+def toggle_ui(event):
+    if event.type == pygame.KEYDOWN and event.key == pygame.K_TAB:
+        for ge in Canvas.graphic_elements:
+            ge.visible = not ge.visible
+
 def main():
     pygame.init()
 
@@ -42,10 +47,9 @@ def main():
     circle = Circle(Vector2(20, 20), 20, Color.RED)
 
     def toggle_color(on):
-        button.visible = not button.visible
         circle.color = Color.BLUE if on else Color.RED
 
-    panel = Panel()
+    panel = Panel(Alignment.get_center_pos(main_surface.get_size(), Vector2(200, 200)), size=Vector2(200, 200), color=Color.GREY)
     fps_text = Label(position=Vector2(WINDOW_SIZE[0]-25, 20), color=Color.BLACK, anchor=Alignment.MID_RIGHT)
     score_text = Label(font_size=60, text=score, position=Vector2(WINDOW_SIZE[0] - 25, 40), anchor=Alignment.TOP_RIGHT)
     button = Button(position=Vector2(25, 25), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False, label_alignment=Alignment.CENTER)
@@ -53,7 +57,7 @@ def main():
     input_box = InputBox(position=Vector2(WINDOW_SIZE[0] - 200, WINDOW_SIZE[1] - 75), on_submit=set_score)
     button2 = Button(image=UiImage(file_name=os.path.abspath("examples\\images\\Present_64px.png")), size=Vector2(150, 150), position=Vector2(WINDOW_SIZE[0]/2 - 75, WINDOW_SIZE[1]/2 - 75), on_click=increment_score)
 
-    EventManager.set_events(toggle_velocity, on_quit=lambda: JsonSave.save(SAVE_FILE, "Score", score))
+    EventManager.set_events([toggle_velocity, toggle_ui], on_quit=lambda: JsonSave.save(SAVE_FILE, "Score", score))
 
     while True:
         delta_time = float(clock.tick(FPS)) / 1000.0

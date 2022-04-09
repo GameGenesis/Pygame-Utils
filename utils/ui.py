@@ -36,6 +36,9 @@ class Alignment:
     MID_RIGHT = "midright"
     CENTER = "center"
 
+    def get_center_pos(parent_size: tuple[int, int] | Vector2, element_size: tuple[int, int] | Vector2):
+        return Vector2(parent_size[0]/2 - element_size[0]/2, parent_size[1]/2 - element_size[1]/2)
+
 
 class Graphic_Event:
     def __init__(self) -> None:
