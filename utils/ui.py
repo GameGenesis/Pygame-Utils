@@ -110,7 +110,7 @@ class Graphic:
     @property
     def is_rendered(self):
         if self.parent:
-            return self.visible and self.parent.visible
+            return self.visible and self.parent.is_rendered
         return self.visible
     
     def _override_rendering(self):
