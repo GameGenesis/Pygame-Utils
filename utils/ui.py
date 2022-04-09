@@ -36,6 +36,7 @@ class Alignment:
     MID_RIGHT = "midright"
     CENTER = "center"
 
+    @staticmethod
     def get_center_pos(parent_size: tuple[int, int] | Vector2, element_size: tuple[int, int] | Vector2):
         return Vector2(parent_size[0]/2 - element_size[0]/2, parent_size[1]/2 - element_size[1]/2)
 
@@ -93,8 +94,9 @@ class EventManager:
 
 
 class Graphic:
-    def __init__(self) -> None:
+    def __init__(self, parent: "Panel"=None) -> None:
         self._visible = True
+        self.set_parent(parent)
         Canvas.add_managed_object(self)
 
     @property
@@ -104,6 +106,20 @@ class Graphic:
     @visible.setter
     def visible(self, value):
         self._visible = value
+
+    @property
+    def is_rendered(self):
+        if self.parent:
+            return self.visible and self.parent.visible
+        return self.visible
+    
+    def _override_rendering(self):
+        Canvas.remove_managed_object(self)
+
+    def set_parent(self, parent: "Panel"):
+        self.parent = parent
+        if parent:
+            parent.add_child_element(self)
 
     @abstractmethod
     def draw(self, surface: pygame.Surface):
@@ -129,6 +145,10 @@ class Canvas:
     @classmethod
     def add_managed_object(cls, graphic: Graphic):
         cls.graphic_elements.append(graphic)
+    
+    @classmethod
+    def remove_managed_object(cls, graphic: Graphic):
+        cls.graphic_elements.remove(graphic)
 
     @classmethod
     def draw(cls) -> None:
@@ -137,17 +157,52 @@ class Canvas:
         if not cls.main_surface:
             cls.main_surface = pygame.display.get_surface()
         for graphic in cls.graphic_elements:
-            if graphic.visible:
+            if graphic.is_rendered:
                 graphic.draw(cls.main_surface)
+
+
+class Panel(Graphic):
+    def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=None,
+    color: pygame.Color | tuple[int, int, int, int]=(80, 80, 80, 100)) -> None:
+        super().__init__()
+        self.position = position
+        self.size = size
+        self.color = color
+        self.panel_surface = None
+        self.child_elements = []
+
+    @property
+    def visible(self):
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        self._visible = value
+
+    def add_child_element(self, child_element: Graphic):
+        self.child_elements.append(child_element)
+
+    def _render(self, surface: pygame.Surface):
+        # If size is set to none, it defaults to the screen/surface size
+        if not self.size:
+            self.size = surface.get_size()
+        self.panel_surface = pygame.Surface(self.size, pygame.SRCALPHA)
+        self.panel_surface.fill(self.color)
+
+    def draw(self, surface: pygame.Surface):
+        if not self.panel_surface:
+            self._render(surface)
+        surface.blit(self.panel_surface, self.position)
 
 
 class UiImage(Graphic):
     def __init__(self, image_surface: pygame.surface=None, file_name: str=None, position: Vector2=Vector2(0, 0), size: Vector2=None,
-    color_tint: pygame.Color | tuple[int, int, int, int]=(255, 255, 255, 255), blend_mode: int=pygame.BLEND_RGBA_MULT) -> None:
+    color_tint: pygame.Color | tuple[int, int, int, int]=(255, 255, 255, 255), blend_mode: int=pygame.BLEND_RGBA_MULT,
+    parent: Panel=None) -> None:
         """
         Specify either the image surface or the image path, not both.
         """
-        super().__init__()
+        super().__init__(parent)
         self.position = position
         self.size = size
         self.color_tint = color_tint
@@ -182,32 +237,11 @@ class UiImage(Graphic):
             surface.blit(self.image_surface, self.position)
 
 
-class Panel(Graphic):
-    def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=None,
-    color: pygame.Color | tuple[int, int, int, int]=(80, 80, 80, 100)) -> None:
-        super().__init__()
-        self.position = position
-        self.size = size
-        self.color = color
-        self.panel_surface = None
-
-    def _render(self, surface: pygame.Surface):
-        # If size is set to none, it defaults to the screen/surface size
-        if not self.size:
-            self.size = surface.get_size()
-        self.panel_surface = pygame.Surface(self.size, pygame.SRCALPHA)
-        self.panel_surface.fill(self.color)
-
-    def draw(self, surface: pygame.Surface):
-        if not self.panel_surface:
-            self._render(surface)
-        surface.blit(self.panel_surface, self.position)
-
-
 class Label(Graphic):
     def __init__(self, text: str | Any="", color: pygame.Color | tuple[int, int, int]=(255, 255, 255),
-    font_name: str=None, font_size: int=28, position: Vector2=Vector2(0, 0), anchor: Alignment | str="midleft") -> None:
-        super().__init__()
+    font_name: str=None, font_size: int=28, position: Vector2=Vector2(0, 0), anchor: Alignment | str="midleft",
+    parent: Panel=None) -> None:
+        super().__init__(parent)
         self.font = pygame.font.Font(font_name, font_size)
         self.text = str(text)
         self.color = color
@@ -257,11 +291,13 @@ class Button(Graphic, Graphic_Event):
     position: Vector2=Vector2(0, 0), size: Vector2=Vector2(150, 75),
     color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220),
     pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165),
-    border_radius: int=0, disabled: bool=False, label: Label=None, label_alignment: Alignment | str="center") -> None:
-        Graphic.__init__(self)
+    border_radius: int=0, disabled: bool=False, label: Label=None, label_alignment: Alignment | str="center",
+    parent: Panel=None) -> None:
+        Graphic.__init__(self, parent)
         Graphic_Event.__init__(self)
         self.button_image = image
         if self.button_image:
+            self.button_image._override_rendering()
             self.button_image.position = position
             self.button_image.size = size
             self.button_image.scale_image()
@@ -282,20 +318,9 @@ class Button(Graphic, Graphic_Event):
         self.label = label
         self.label_alignment = label_alignment
         if self.label:
+            self.label._override_rendering()
             self.label._render()
         self.set_label_pos()
-
-    @property
-    def visible(self):
-        return self._visible
-
-    @visible.setter
-    def visible(self, value):
-        if self.button_image:
-            self.button_image.visible = value
-        if self.label:
-            self.label.visible = value
-        self._visible = value
 
     def set_color(self, color: pygame.Color | tuple[int, int, int]):
         self.current_color = color
@@ -395,9 +420,9 @@ class CheckBox(Button):
     color: pygame.Color | tuple[int, int, int]=(255, 255, 255), hover_color: pygame.Color | tuple[int, int, int]=(220, 220, 220),
     pressed_color: pygame.Color | tuple[int, int, int]=(185, 185, 185), disabled_color: pygame.Color | tuple[int, int, int]=(165, 165, 165),
     tick_color: pygame.Color | tuple[int, int, int]=(55, 55, 55), is_on: bool=False,
-    border_radius: int=0, disabled: bool=False, label_alignment: Alignment | str="midleft") -> None:
+    border_radius: int=0, disabled: bool=False, label_alignment: Alignment | str="midleft", parent: Panel=None) -> None:
         super().__init__(None, on_value_change, position, size, color, hover_color, pressed_color, disabled_color,
-        border_radius, disabled, None, label_alignment)
+        border_radius, disabled, None, label_alignment, parent)
         self.tick_color = tick_color
         self.is_on = is_on
         self.tick_rect = pygame.Rect(Vector2(position.x + size.x/4, position.y + size.y/4), Vector2(size.x / 2, size.y / 2))
@@ -419,8 +444,9 @@ class InputBox(Label, Graphic_Event):
     box_color: pygame.Color | tuple[int, int, int]=(255, 255, 255), border_thickness: int=2,
     border_color_active: pygame.Color | tuple[int, int, int]=(20, 20, 20),
     border_color_inactive: pygame.Color | tuple[int, int, int]=(100, 100, 100),
-    text_color: pygame.Color | tuple[int, int, int]=(20, 20, 20), text: str | Any="", font_name: str=None, font_size: int=28):
-        super().__init__(text, text_color, font_name, font_size, position)
+    text_color: pygame.Color | tuple[int, int, int]=(20, 20, 20), text: str | Any="", font_name: str=None, font_size: int=28,
+    parent: Panel=None) -> None:
+        super().__init__(text, text_color, font_name, font_size, position, parent=parent)
         Graphic_Event.__init__(self)
         self.rect = pygame.Rect(position, size)
         self.position = position
