@@ -41,6 +41,18 @@ class Alignment:
         return Vector2(parent_size[0]/2 - element_size[0]/2, parent_size[1]/2 - element_size[1]/2)
 
 
+class AlignmentNotSupportedError(Exception):
+    """Exception raised for unsupported alignment options
+
+    Atributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, alignment: str=""):
+        self.message = f"Alignment type not supported: {alignment}"
+        super().__init__(self.message)
+
+
 class Graphic_Event:
     def __init__(self) -> None:
         EventManager.add_managed_object(self)
@@ -341,25 +353,11 @@ class Button(Graphic, Graphic_Event):
         if not self.label:
             return
 
-        if self.label_alignment == "center":
-            label_offset = (self.size.x/2, self.size.y/2)
-        elif self.label_alignment == "midtop":
-            label_offset = (self.size.x/2, 0)
-        elif self.label_alignment == "midbottom":
-            label_offset = (self.size.x/2, self.size.y)
-        elif self.label_alignment == "midleft":
-            label_offset = (0, self.size.y/2)
-        elif self.label_alignment == "bottomleft":
-            label_offset = (0, self.size.y)
-        elif self.label_alignment == "topright":
-            label_offset = (self.size.x, 0)
-        elif self.label_alignment == "midright":
-            label_offset = (self.size.x, self.size.y/2)
-        elif self.label_alignment == "bottomright":
-            label_offset = (self.size.x, self.size.y)
-        else:
-            label_offset = (0, 0)
-        label_pos = (self.position.x + self.label.position[0] + label_offset[0], self.position.y + self.label.position[1] + label_offset[1])
+        try:
+            label_pos = getattr(self.rect, self.label_alignment)
+        except AttributeError:
+            raise AlignmentNotSupportedError(self.label_alignment)
+
         self.label.set_position(label_pos, anchor=self.label_alignment)
 
     def set_text(self, text: str | Any):
