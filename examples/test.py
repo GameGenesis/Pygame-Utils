@@ -46,18 +46,19 @@ def main():
             panel.visible = not panel.visible
 
     def toggle_color(on):
-        main_panel.visible = not main_panel.visible
         circle.color = Color.BLUE if on else Color.RED
 
-    main_panel = Panel()
-    panel = Panel(Alignment.get_center_pos(main_surface.get_size(), Vector2(200, 200)), size=Vector2(200, 200), color=Color.GREY)
-    panel.set_parent(main_panel)
+    panel = Panel()
     fps_text = Label(position=Vector2(WINDOW_SIZE[0]-25, 20), color=Color.BLACK, anchor=Alignment.MID_RIGHT)
     score_text = Label(font_size=60, text=score, position=Vector2(WINDOW_SIZE[0] - 25, 40), anchor=Alignment.TOP_RIGHT)
     button = Button(position=Vector2(25, 25), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False, label_alignment=Alignment.CENTER)
     check_box = CheckBox(position=Vector2(25, WINDOW_SIZE[1] - 75), on_value_change=toggle_color)
     input_box = InputBox(position=Vector2(WINDOW_SIZE[0] - 200, WINDOW_SIZE[1] - 75), on_submit=set_score)
     button2 = Button(image=UiImage(file_name=os.path.abspath("examples\\images\\Present_64px.png")), size=Vector2(150, 150), position=Vector2(WINDOW_SIZE[0]/2 - 75, WINDOW_SIZE[1]/2 - 75), on_click=increment_score, parent=panel)
+
+    for ge in Canvas.graphic_elements:
+        if not isinstance(ge, Panel):
+            ge.parent = panel
 
     EventManager.set_events([toggle_velocity, toggle_ui], on_quit=lambda: JsonSave.save(SAVE_FILE, "Score", score))
 

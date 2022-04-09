@@ -163,8 +163,8 @@ class Canvas:
 
 class Panel(Graphic):
     def __init__(self, position: Vector2=Vector2(0, 0), size: Vector2=None,
-    color: pygame.Color | tuple[int, int, int, int]=(80, 80, 80, 100)) -> None:
-        super().__init__()
+    color: pygame.Color | tuple[int, int, int, int]=(80, 80, 80, 100), parent: "Panel"=None) -> None:
+        super().__init__(parent)
         self.position = position
         self.size = size
         self.color = color
