@@ -91,7 +91,16 @@ class EventManager:
 
 class Graphic:
     def __init__(self) -> None:
+        self._visible = True
         Canvas.add_managed_object(self)
+
+    @property
+    def visible(self):
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        self._visible = value
 
     @abstractmethod
     def draw(self, surface: pygame.Surface):
@@ -125,7 +134,8 @@ class Canvas:
         if not cls.main_surface:
             cls.main_surface = pygame.display.get_surface()
         for graphic in cls.graphic_elements:
-            graphic.draw(cls.main_surface)
+            if graphic.visible:
+                graphic.draw(cls.main_surface)
 
 
 class UiImage(Graphic):
@@ -159,7 +169,7 @@ class UiImage(Graphic):
         if self.size:
             self.image_surface = pygame.transform.scale(self.image_surface, self.size)
             self.og_image_surface = self.image_surface.copy()
-    
+
     def tint_image(self, color: pygame.Color | tuple[int, int, int, int], blend_mode: int=pygame.BLEND_RGBA_MULT):
         self.image_surface = self.og_image_surface.copy()
         self.image_surface.fill(color, special_flags=blend_mode)
@@ -193,7 +203,7 @@ class Panel(Graphic):
 
 class Label(Graphic):
     def __init__(self, text: str | Any="", color: pygame.Color | tuple[int, int, int]=(255, 255, 255),
-    font_name: str=None, font_size: int=28, position: Vector2=Vector2(0, 0), anchor: Alignment | str="midleft"):
+    font_name: str=None, font_size: int=28, position: Vector2=Vector2(0, 0), anchor: Alignment | str="midleft") -> None:
         super().__init__()
         self.font = pygame.font.Font(font_name, font_size)
         self.text = str(text)
@@ -272,6 +282,18 @@ class Button(Graphic, Graphic_Event):
             self.label._render()
         self.set_label_pos()
 
+    @property
+    def visible(self):
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        if self.button_image:
+            self.button_image.visible = value
+        if self.label:
+            self.label.visible = value
+        self._visible = value
+
     def set_color(self, color: pygame.Color | tuple[int, int, int]):
         self.current_color = color
         if self.button_image:
@@ -335,18 +357,21 @@ class Button(Graphic, Graphic_Event):
             self.set_color(self.hover_color)
 
     def handle_event(self, event: pygame.event.Event) -> None:
+        if self.disabled or not self.visible:
+            return
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button != 1:
                 return
             pos = pygame.mouse.get_pos()
-            if self.rect.collidepoint(pos) and not self.disabled:
+            if self.rect.collidepoint(pos):
                 self.button_press()
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button != 1:
                 return
             self.button_release()
             pos = pygame.mouse.get_pos()
-            if self.rect.collidepoint(pos) and not self.disabled:
+            if self.rect.collidepoint(pos):
                 self.call_back()
 
     def button_press(self):
@@ -417,6 +442,8 @@ class InputBox(Label, Graphic_Event):
         pygame.draw.rect(surface, self.border_color, self.rect, self.border_thickness)
 
     def handle_event(self, event: pygame.event.Event) -> None:
+        if not self.visible:
+            return
         if event.type == pygame.MOUSEBUTTONDOWN:
             # If the user clicked on the input_box rect
             if self.rect.collidepoint(event.pos):

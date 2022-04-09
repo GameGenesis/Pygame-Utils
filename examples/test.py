@@ -40,6 +40,7 @@ def main():
     circle = Circle(Vector2(20, 20), 20, Color.RED)
 
     def toggle_color(on):
+        button.visible = not button.visible
         circle.color = Color.BLUE if on else Color.RED
 
     panel = Panel()
