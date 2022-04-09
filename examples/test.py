@@ -4,8 +4,10 @@ import pygame
 from pygame.math import Vector2
 
 sys.path.append(os.getcwd())
+
 from utils.json_save import JsonSave
-from utils.pygame_utils import Alignment, Button, Canvas, CheckBox, EventManager, InputBox, Label, Panel, Square, Circle, Color, UiImage
+from utils.ui import Alignment, Button, Canvas, CheckBox, EventManager, InputBox, Label, Panel, Color, UiImage
+from utils.shape import Circle
 
 FPS = 60
 WINDOW_SIZE = (480, 720)
