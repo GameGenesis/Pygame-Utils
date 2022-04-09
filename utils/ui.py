@@ -112,7 +112,7 @@ class Graphic:
         if self.parent:
             return self.visible and self.parent.is_rendered
         return self.visible
-    
+
     def _override_rendering(self):
         Canvas.remove_managed_object(self)
 
@@ -145,7 +145,7 @@ class Canvas:
     @classmethod
     def add_managed_object(cls, graphic: Graphic):
         cls.graphic_elements.append(graphic)
-    
+
     @classmethod
     def remove_managed_object(cls, graphic: Graphic):
         cls.graphic_elements.remove(graphic)
@@ -385,7 +385,7 @@ class Button(Graphic, Graphic_Event):
             self.set_color(self.hover_color)
 
     def handle_event(self, event: pygame.event.Event) -> None:
-        if self.disabled or not self.visible:
+        if self.disabled or not self.is_rendered:
             return
 
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -471,7 +471,7 @@ class InputBox(Label, Graphic_Event):
         pygame.draw.rect(surface, self.border_color, self.rect, self.border_thickness)
 
     def handle_event(self, event: pygame.event.Event) -> None:
-        if not self.visible:
+        if not self.is_rendered:
             return
         if event.type == pygame.MOUSEBUTTONDOWN:
             # If the user clicked on the input_box rect
