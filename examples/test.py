@@ -1,7 +1,10 @@
+import os
+import sys
 import pygame
 from pygame.math import Vector2
-from utils.json_save import JsonSave
 
+sys.path.append(os.getcwd())
+from utils.json_save import JsonSave
 from utils.pygame_utils import Alignment, Button, Canvas, CheckBox, EventManager, InputBox, Label, Panel, Square, Circle, Color, UiImage
 
 FPS = 60
@@ -10,7 +13,8 @@ WINDOW_SIZE = (480, 720)
 VELOCITY = [400, 400]
 current_velocity = VELOCITY
 
-score = JsonSave.load("save_data.json", "Score", 0)
+SAVE_FILE = os.path.abspath(os.path.join("examples", "save_data.json"))
+score = JsonSave.load(SAVE_FILE, "Score", 0)
 
 def set_score(value):
     global score
@@ -44,8 +48,9 @@ def main():
     button = Button(position=Vector2(25, 25), label=Label("Button", Color.BLACK, font_size=40), on_click=increment_score, disabled=False, label_alignment=Alignment.CENTER)
     check_box = CheckBox(position=Vector2(25, WINDOW_SIZE[1] - 75), on_value_change=toggle_color)
     input_box = InputBox(position=Vector2(WINDOW_SIZE[0] - 200, WINDOW_SIZE[1] - 75), on_submit=set_score)
-    button2 = Button(image=UiImage(file_name="images/Present_64px.png"), size=Vector2(150, 150), position=Vector2(WINDOW_SIZE[0]/2 - 75, WINDOW_SIZE[1]/2 - 75), on_click=increment_score)
-    EventManager.set_events(toggle_velocity, on_quit=lambda: JsonSave.save("save_data.json", "Score", score))
+    button2 = Button(image=UiImage(file_name=os.path.abspath("examples\\images\\Present_64px.png")), size=Vector2(150, 150), position=Vector2(WINDOW_SIZE[0]/2 - 75, WINDOW_SIZE[1]/2 - 75), on_click=increment_score)
+
+    EventManager.set_events(toggle_velocity, on_quit=lambda: JsonSave.save(SAVE_FILE, "Score", score))
 
     while True:
         delta_time = float(clock.tick(FPS)) / 1000.0
