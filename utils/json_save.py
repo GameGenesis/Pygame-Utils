@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any
+from typing import Any, Optional
 
 class JsonSave:
     """
@@ -17,7 +17,7 @@ class JsonSave:
     sort_keys = False
 
     @classmethod
-    def set_formatting(cls, indent=4, sort_keys=True) -> None:
+    def set_formatting(cls, indent:Optional[int]=4, sort_keys: bool=True) -> None:
         """
         Sets the json file formatting style
 
@@ -50,7 +50,7 @@ class JsonSave:
         cls.indent, cls.sort_keys = None, False
 
     @classmethod
-    def save(cls, file_path, key, value) -> None:
+    def save(cls, file_path: str, key: str, value: Any) -> None:
         """
         Saves a value to the specified key in the json file
 
@@ -73,7 +73,7 @@ class JsonSave:
             json.dump(data, f, indent=cls.indent, sort_keys=cls.sort_keys)
 
     @staticmethod
-    def load(file_path, key, default_value=dict()) -> Any:
+    def load(file_path: str, key: str, default_value: Optional[Any]=dict()) -> Any:
         """
         Loads the value corresponding to the key in the json file
 
@@ -83,7 +83,7 @@ class JsonSave:
             The path of the json file that the data is saved in
         key : str
             The key that corresponds to the data being retrieved
-        default_value: Any
+        default_value: Any, optional
             The default value to be stored and returned if there is no existing value
 
         Returns
@@ -104,7 +104,7 @@ class JsonSave:
         return value
 
     @classmethod
-    def set_contents(cls, file_path, contents=None) -> None:
+    def set_contents(cls, file_path: str, contents: Optional[Any]=None) -> None:
         """
         Overrides the content of a json file. If the file does not exist, creates a new file and stores the contents in the file.
 
@@ -124,7 +124,7 @@ class JsonSave:
                 json.dump(contents, f, indent=cls.indent, sort_keys=cls.sort_keys)
 
     @staticmethod
-    def get_contents(file_path) -> Any:
+    def get_contents(file_path: str) -> Any:
         """
         Returns the contents of a json file. If the file does not exist, creates a new file and returns an empty dictionary.
 
@@ -150,7 +150,7 @@ class JsonSave:
         return data
 
     @staticmethod
-    def clear_contents(file_path) -> None:
+    def clear_contents(file_path: str) -> None:
         """
         Clears the contents of a json file. If the file doesn't exist, creates a new file
 
@@ -166,7 +166,7 @@ class JsonSave:
         JsonSave.set_contents(file_path)
 
     @staticmethod
-    def delete_key(file_path, key) -> None:
+    def delete_key(file_path: str, key: str) -> None:
         """
         Deletes the specified key-value pair from the json file
 
@@ -186,7 +186,7 @@ class JsonSave:
         JsonSave.set_contents(file_path, data)
 
     @staticmethod
-    def delete_file(file_path) -> None:
+    def delete_file(file_path: str) -> None:
         """
         Deletes the specified file
 
