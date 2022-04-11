@@ -9,6 +9,9 @@ from pygame.math import Vector2
 
 
 class Color:
+    """
+    Common color constants
+    """
     BLACK = pygame.color.Color(0, 0, 0)
     CLEAR = pygame.color.Color(0, 0, 0, 0)
     WHITE = pygame.color.Color(255, 255, 255)
@@ -26,6 +29,9 @@ class Color:
 
 
 class Alignment:
+    """
+    Label alignment constants
+    """
     TOP_LEFT = "topleft"
     BOTTOM_LEFT = "bottomleft"
     TOP_RIGHT = "topright"

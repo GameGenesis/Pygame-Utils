@@ -5,11 +5,11 @@ from pygame import Vector2
 
 
 class Shape(object):
-    def __init__(self, position: Vector2 | tuple[int, int]=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
+    def __init__(self, position: tuple[int, int] | Vector2=Vector2(0, 0), color: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
         """
         Parameters
         ----------
-        position : Vector2 | tuple[int, int]
+        position : tuple[int, int] | Vector2
             The position of the shape. Default is (0, 0)
         color : pygame.Color | tuple[int, int, int]
             The position of the shape. Default is black or (0, 0, 0)
@@ -31,14 +31,14 @@ class Shape(object):
 
 
 class Square(Shape):
-    def __init__(self, position: Vector2| tuple[int, int]=Vector2(0, 0), size: Vector2 | tuple[int, int]=Vector2(100, 100),
+    def __init__(self, position: tuple[int, int] | Vector2=Vector2(0, 0), size: tuple[int, int] | Vector2=Vector2(100, 100),
     color: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
         """
         Parameters
         ----------
-        position : Vector2 | tuple[int, int]
+        position : tuple[int, int] | Vector2
             The position of the shape. Default is (0, 0)
-        size : Vector2 | tuple[int, int]
+        size : tuple[int, int] | Vector2
             The size of the square. Default is (100, 100)
         color : pygame.Color | tuple[int, int, int]
             The position of the shape. Default is black or (0, 0, 0)
@@ -90,11 +90,11 @@ class Square(Shape):
 
 
 class Circle(Shape):
-    def __init__(self, position: Vector2=Vector2(0, 0), radius: int=10, color: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
+    def __init__(self, position: tuple[int, int] | Vector2=Vector2(0, 0), radius: int=10, color: pygame.Color | tuple[int, int, int]=(0, 0, 0)) -> None:
         """
         Parameters
         ----------
-        position : Vector2 | tuple[int, int]
+        position :tuple[int, int] | Vector2
             The position of the shape. Default is (0, 0)
         radius : int
             The radius of the circle. Default is 10
