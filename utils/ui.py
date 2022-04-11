@@ -43,15 +43,30 @@ class Alignment:
     CENTER = "center"
 
     @staticmethod
-    def get_center_pos(parent_size: tuple[int, int] | Vector2, element_size: tuple[int, int] | Vector2):
+    def get_center_pos(parent_size: tuple[int, int] | Vector2, element_size: tuple[int, int] | Vector2) -> Vector2:
+        """
+        Parameters
+        ----------
+        parent_size : Vector2 | tuple[int, int]
+            The size of the parent surface
+        element_size : Vector2 | tuple[int, int]
+            The size of the element surface
+
+        Returns
+        -------
+        Vector2
+            The center position
+        """
         return Vector2(parent_size[0]/2 - element_size[0]/2, parent_size[1]/2 - element_size[1]/2)
 
 
 class AlignmentNotSupportedError(Exception):
     """Exception raised for unsupported alignment options
 
-    Atributes:
-        message -- explanation of the error
+    Atributes
+    ---------
+    message : str
+        Explanation of the error
     """
 
     def __init__(self, alignment: str=""):
