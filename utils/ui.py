@@ -191,15 +191,19 @@ class EventManager:
         None
         """
         for event in pygame.event.get():
+            # Quitting the game
             if event.type == pygame.QUIT:
+                # On quit callback
                 if cls.on_quit:
                     cls.on_quit()
                 pygame.quit()
                 sys.exit()
+            # User-specified callbacks
             for func in cls.funcs:
                 func(event)
             if not cls.graphic_events:
                 continue
+            # UI element events
             for ge in cls.graphic_events:
                 ge.handle_event(event)
 
