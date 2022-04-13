@@ -76,6 +76,13 @@ class AlignmentNotSupportedError(Exception):
 
 class Graphic_Event:
     def __init__(self) -> None:
+        """
+        Adds self to EventManager
+
+        Returns
+        -------
+        None
+        """
         EventManager.add_managed_object(self)
 
     @abstractmethod
@@ -84,20 +91,71 @@ class Graphic_Event:
 
 
 class EventManager:
+    """
+    Manages game and UI events
+
+    Attributes
+    ----------
+    on_quit : Callable
+        The method/function to call when the user quits the game
+    funcs : list[Callable]
+        The functions called with pygame.event passed as a parameter. Event checks must be implemented in the function itself
+    graphic_events : list[Graphic_Event]
+        A list of UI elements with necessary event handling
+    """
     on_quit = None
     funcs = []
     graphic_events = []
 
     @classmethod
-    def update_managed_objects(cls, graphic_events: list[Graphic_Event]):
+    def update_managed_objects(cls, graphic_events: list[Graphic_Event]) -> None:
+        """
+        Updates the list of managed UI elements with a new list
+
+        Parameters
+        ----------
+        graphic_events : list[Graphic_Event]
+            The new list of graphic event elements
+
+        Returns
+        -------
+        None
+        """
         cls.graphic_events = graphic_events
 
     @classmethod
-    def add_managed_object(cls, graphic_event: Graphic_Event):
+    def add_managed_object(cls, graphic_event: Graphic_Event) -> None:
+        """
+        Adds a new UI element to the list of managed UI elements
+
+        Parameters
+        ----------
+        graphic_event : Graphic_Event
+            The graphic event element to add
+
+        Returns
+        -------
+        None
+        """
         cls.graphic_events.append(graphic_event)
 
     @classmethod
     def set_events(cls, call_backs: Callable | list[Callable]=None, on_quit: Callable=None) -> None:
+        """
+        Sets the callbacks for the EventManager to handle
+
+        Parameters
+        ----------
+        call_backs : Callable | list[Callable], optional
+            A function or list of functions to call and pass in a pygame.event as a paramter.
+            Event checks must be implemented in the function itself using the passed in pygame.event
+        on_quit : Callable, optional
+            The function to call when the user quits the game
+
+        Returns
+        -------
+        None
+        """
         if call_backs:
             if type(call_backs) == list:
                 cls.funcs = call_backs
@@ -107,11 +165,31 @@ class EventManager:
         cls.on_quit = on_quit
 
     @classmethod
-    def add_event(cls, call_back: Callable | list[Callable]):
+    def add_event(cls, call_back: Callable | list[Callable]) -> None:
+        """
+        Adds a function to the list of callbacks
+
+        Parameters
+        ----------
+        call_backs : Callable | list[Callable], optional
+            A function to call and pass in a pygame.event as a paramter.
+            Event checks must be implemented in the function itself using the passed in pygame.event
+
+        Returns
+        -------
+        None
+        """
         cls.funcs.append(call_back)
 
     @classmethod
     def handle_events(cls) -> None:
+        """
+        Run this function in the game's while loop. This manages all events including user defined and UI events
+
+        Returns
+        -------
+        None
+        """
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 if cls.on_quit:
