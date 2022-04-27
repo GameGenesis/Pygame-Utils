@@ -357,7 +357,7 @@ class Label(Graphic):
     font_name: str=None, font_size: int=28, position: Vector2=Vector2(0, 0), anchor: Alignment | str="midleft",
     parent: Panel=None) -> None:
         super().__init__(parent)
-        self.font = pygame.font.Font(font_name, font_size)
+        self.font = pygame.font.SysFont(font_name, font_size)
         self.text = str(text)
         self.color = color
         self.anchor = anchor
@@ -380,7 +380,11 @@ class Label(Graphic):
         self._render()
 
     def set_font(self, font_name: str, font_size: int):
-        self.font = pygame.font.Font(font_name, font_size)
+        self.font = pygame.font.SysFont(font_name, font_size)
+        self._render()
+    
+    def set_custom_font(self, font: pygame.font.Font):
+        self.font = font
         self._render()
 
     def set_color(self, color: tuple[int, int, int]):
