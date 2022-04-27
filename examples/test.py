@@ -3,6 +3,8 @@ import sys
 import pygame
 from pygame.math import Vector2
 
+from utils.window import Window
+
 sys.path.append(os.getcwd())
 
 from utils.json_save import JsonSave
@@ -32,12 +34,9 @@ def toggle_velocity(event):
         current_velocity = [0, 0] if current_velocity != [0, 0] else VELOCITY
 
 def main():
-    pygame.init()
+    main_surface = Window(WINDOW_SIZE)
 
     clock = pygame.time.Clock()
-
-    pygame.display.set_caption("Game")
-    main_surface = pygame.display.set_mode(WINDOW_SIZE)
 
     circle = Circle(Vector2(20, 20), 20, Color.RED)
 

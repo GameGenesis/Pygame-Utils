@@ -208,7 +208,7 @@ class EventManager:
             # UI element events
             for ge in cls.graphic_events:
                 ge.handle_event(event)
-        
+
         return events
 
 
@@ -386,7 +386,7 @@ class Label(Graphic):
     def set_font(self, font_name: str, font_size: int):
         self.font = pygame.font.SysFont(font_name, font_size)
         self._render()
-    
+
     def set_custom_font(self, font: pygame.font.Font):
         self.font = font
         self._render()
