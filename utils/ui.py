@@ -182,7 +182,7 @@ class EventManager:
         cls.funcs.append(call_back)
 
     @classmethod
-    def handle_events(cls) -> None:
+    def handle_events(cls) -> list[pygame.event.Event]:
         """
         Run this function in the game's while loop. This manages all events including user defined and UI events
 
@@ -190,7 +190,9 @@ class EventManager:
         -------
         None
         """
-        for event in pygame.event.get():
+        events = pygame.event.get()
+
+        for event in events:
             # Quitting the game
             if event.type == pygame.QUIT:
                 # On quit callback
@@ -206,6 +208,8 @@ class EventManager:
             # UI element events
             for ge in cls.graphic_events:
                 ge.handle_event(event)
+        
+        return events
 
 
 class Graphic:

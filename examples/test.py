@@ -64,7 +64,9 @@ def main():
 
     while True:
         delta_time = float(clock.tick(FPS)) / 1000.0
-        EventManager.handle_events()
+        for event in EventManager.handle_events():
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                print("Restart")
 
         # Moving 200 pixels per second in the positive x direction
         circle.move(circle.position.x + current_velocity[0] * delta_time, circle.position.y + current_velocity[1] * delta_time)
