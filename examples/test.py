@@ -3,13 +3,12 @@ import sys
 import pygame
 from pygame.math import Vector2
 
-from utils.window import Window
-
 sys.path.append(os.getcwd())
 
 from utils.json_save import JsonSave
 from utils.ui import Alignment, Button, Canvas, CheckBox, EventManager, InputBox, Label, Panel, Color, UiImage
 from utils.shape import Circle
+from utils.window import Window
 
 FPS = 60
 WINDOW_SIZE = (480, 720)
@@ -34,9 +33,7 @@ def toggle_velocity(event):
         current_velocity = [0, 0] if current_velocity != [0, 0] else VELOCITY
 
 def main():
-    main_surface = Window(WINDOW_SIZE)
-
-    clock = pygame.time.Clock()
+    window = Window(WINDOW_SIZE)
 
     circle = Circle(Vector2(20, 20), 20, Color.RED)
 
@@ -62,7 +59,8 @@ def main():
     EventManager.set_events([toggle_velocity, toggle_ui], on_quit=lambda: JsonSave.save(SAVE_FILE, "Score", score))
 
     while True:
-        delta_time = float(clock.tick(FPS)) / 1000.0
+        delta_time = window.get_delta_time(window.clock.tick(FPS))
+
         for event in EventManager.handle_events():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
                 print("Restart")
@@ -71,16 +69,16 @@ def main():
         circle.move(circle.position.x + current_velocity[0] * delta_time, circle.position.y + current_velocity[1] * delta_time)
 
         if current_velocity != [0, 0]:
-            if circle.position.x + circle.radius/2 >= main_surface.get_width() or circle.position.x - circle.radius/2 <= 0:
+            if circle.position.x + circle.radius/2 >= window.surface.get_width() or circle.position.x - circle.radius/2 <= 0:
                 current_velocity[0] *= -1
-            if circle.position.y + circle.radius/2 >= main_surface.get_height() or circle.position.y - circle.radius/2 <= 0:
+            if circle.position.y + circle.radius/2 >= window.surface.get_height() or circle.position.y - circle.radius/2 <= 0:
                 current_velocity[1] *= -1
 
-        main_surface.fill((0, 200, 255))
-        circle.draw(main_surface)
+        window.surface.fill((0, 200, 255))
+        circle.draw(window.surface)
 
         # UI Elements
-        fps_text.set_text(f"FPS: {int(clock.get_fps())}")
+        fps_text.set_text(f"FPS: {int(window.clock.get_fps())}")
         score_text.set_text(score)
         Canvas.draw()
 
