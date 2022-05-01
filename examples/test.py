@@ -1,4 +1,3 @@
-import logging
 import os
 import sys
 import pygame
@@ -33,7 +32,7 @@ def set_score(value):
 def increment_score(value=1):
     global score
     score += value
-    lg.logger.debug(f"Score: {score}")
+    lg.logger.debug(f"Score: {score}", stack_info=True, stacklevel=1)
 
 def toggle_velocity(event):
     global VELOCITY, current_velocity

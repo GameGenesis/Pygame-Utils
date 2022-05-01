@@ -56,7 +56,7 @@ def addLoggingLevel(levelName, levelNum, methodName=None):
     setattr(logging, methodName, logToRoot)
 
 
-class CustomFormatter(logging.Formatter):
+class ColorFormatter(logging.Formatter):
 
     grey = "\x1b[38;20m"
     green = "\x1b[32;20m"
@@ -84,6 +84,7 @@ class CustomFormatter(logging.Formatter):
         formatter = logging.Formatter(fmt=log_fmt, datefmt="%H:%M:%S")
         return formatter.format(record)
 
+
 addLoggingLevel("INTERNAL", logging.DEBUG - 5)
 
 BASE_LOGGING_LEVEL = logging.INTERNAL
@@ -108,7 +109,7 @@ def init_logger(log_to_console: bool=True, log_to_file: bool=True,
     if log_to_console:
         stream_handler = logging.StreamHandler()
         stream_handler.setLevel(stream_logging_level)
-        stream_handler.setFormatter(CustomFormatter())
+        stream_handler.setFormatter(ColorFormatter())
 
         logger.addHandler(stream_handler)
 
@@ -117,9 +118,9 @@ def init_logger(log_to_console: bool=True, log_to_file: bool=True,
         file_handler = logging.FileHandler(filename=f"{__package__}.log", mode=file_mode)
         file_handler.setLevel(file_logging_level)
 
-        file_info = PATH_NAME if display_full_path else FILE_NAME
-        file_formatter = logging.Formatter(fmt=f"[%(asctime)s] %(levelname)s %(funcName)s ({file_info}:%(lineno)d): %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S")
+        file_formatter = logging.Formatter(
+            fmt="[%(asctime)s] %(levelname)s %(funcName)s (%(filename)s:%(lineno)d): %(message)s\nFile \"%(pathname)s:%(lineno)d\"\n%(processName)s\n",
+            datefmt="%Y-%m-%d %H:%M:%S",)
         file_handler.setFormatter(file_formatter)
 
         logger.addHandler(file_handler)
