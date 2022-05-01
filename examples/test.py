@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import pygame
@@ -9,7 +10,7 @@ from utils.json_save import JsonSave
 from utils.ui import Alignment, Button, Canvas, CheckBox, EventManager, InputBox, Label, Panel, Color, UiImage
 from utils.shape import Circle
 from utils.window import Window
-from utils.logger import logger
+import utils.logger as lg
 
 FPS = 60
 WINDOW_SIZE = (480, 720)
@@ -21,7 +22,7 @@ SAVE_FILE = os.path.abspath(os.path.join("examples", "save_data.json"))
 score = JsonSave.load(SAVE_FILE, "Score", 0)
 
 def quit_game():
-    logger.error("Quit game!")
+    lg.logger.error("Quit game!")
     pygame.quit()
     sys.exit()
 
@@ -32,13 +33,16 @@ def set_score(value):
 def increment_score(value=1):
     global score
     score += value
+    lg.logger.debug(f"Score: {score}")
 
 def toggle_velocity(event):
     global VELOCITY, current_velocity
     if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
         current_velocity = [0, 0] if current_velocity != [0, 0] else VELOCITY
+        lg.logger.warning("Velocity has been updated")
 
 def main():
+    lg.init_logger_custom(log_to_file=False)
     window = Window(WINDOW_SIZE)
 
     circle = Circle(Vector2(20, 20), 20, Color.RED)

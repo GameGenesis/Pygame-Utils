@@ -22,7 +22,7 @@ def addLoggingLevel(levelName, levelNum, methodName=None):
 
     To avoid accidental clobberings of existing attributes, this method will
     raise an `AttributeError` if the level name is already an attribute of the
-    `logging` module or if the method name is already present 
+    `logging` module or if the method name is already present
 
     Example
     -------
@@ -71,7 +71,7 @@ class CustomFormatter(logging.Formatter):
     fmt_internal = "{0}[%(asctime)s] (%(filename)s): %(message)s{1}"
 
     FORMATS = {
-        logging.DEBUG - 5: fmt_internal.format(green, reset),
+        logging.DEBUG - 5: fmt.format(green, bold, reset, green, reset),
         logging.DEBUG: fmt.format(grey, bold, reset, grey, reset),
         logging.INFO: fmt.format(grey, bold, reset, grey, reset),
         logging.WARNING: fmt.format(yellow, bold, reset, yellow, reset),
@@ -84,23 +84,46 @@ class CustomFormatter(logging.Formatter):
         formatter = logging.Formatter(fmt=log_fmt, datefmt="%H:%M:%S")
         return formatter.format(record)
 
-
-logger = logging.getLogger(__name__)
-
 addLoggingLevel("INTERNAL", logging.DEBUG - 5)
-logger.setLevel(logging.INTERNAL)
 
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.INTERNAL)
-stream_handler.setFormatter(CustomFormatter())
+BASE_LOGGING_LEVEL = logging.INTERNAL
+STREAM_LOGGING_LEVEL = logging.INTERNAL
+FILE_LOGGING_LEVEL = logging.INFO
 
-file_handler = logging.FileHandler(filename=f"{__package__}.log", mode="w")
-file_handler.setLevel(logging.INFO)
-file_formatter = logging.Formatter(fmt="[%(asctime)s] %(levelname)s %(funcName)s (%(filename)s:%(lineno)d): %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S")
-file_handler.setFormatter(file_formatter)
+PATH_NAME = "%(pathname)s"
+FILE_NAME = "%(filename)s"
 
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
+def init_logger_custom(log_to_console: bool=True, log_to_file: bool=True,
+                base_logging_level: int=BASE_LOGGING_LEVEL, stream_logging_level: int=STREAM_LOGGING_LEVEL,
+                file_logging_level: int=FILE_LOGGING_LEVEL, display_full_path: bool=False, rewrite_log_file: bool=True,
+                display_init_message: bool=True):
+    global logger
 
-logger.internal("Initialized Logger!")
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(stream_logging_level)
+    stream_handler.setFormatter(CustomFormatter())
+
+    file_mode = "w" if rewrite_log_file else "a"
+    file_handler = logging.FileHandler(filename=f"{__package__}.log", mode=file_mode)
+    file_handler.setLevel(file_logging_level)
+
+    file_info = PATH_NAME if display_full_path else FILE_NAME
+    file_formatter = logging.Formatter(fmt=f"[%(asctime)s] %(levelname)s %(funcName)s ({file_info}:%(lineno)d): %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S")
+    file_handler.setFormatter(file_formatter)
+
+    logger = logging.getLogger(__name__)
+    logger.setLevel(base_logging_level)
+
+    while logger.hasHandlers():
+        logger.removeHandler(logger.handlers[0])
+
+    if log_to_file:
+        logger.addHandler(file_handler)
+    if log_to_console:
+        logger.addHandler(stream_handler)
+
+    if display_init_message:
+        logger.internal("Initialized Logger!")
+
+init_logger_custom(display_init_message=False)
