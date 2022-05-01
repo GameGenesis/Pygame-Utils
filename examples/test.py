@@ -9,6 +9,7 @@ from utils.json_save import JsonSave
 from utils.ui import Alignment, Button, Canvas, CheckBox, EventManager, InputBox, Label, Panel, Color, UiImage
 from utils.shape import Circle
 from utils.window import Window
+from utils.logger import logger
 
 FPS = 60
 WINDOW_SIZE = (480, 720)
@@ -20,6 +21,7 @@ SAVE_FILE = os.path.abspath(os.path.join("examples", "save_data.json"))
 score = JsonSave.load(SAVE_FILE, "Score", 0)
 
 def quit_game():
+    logger.error("Quit game!")
     pygame.quit()
     sys.exit()
 
