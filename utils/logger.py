@@ -93,24 +93,11 @@ FILE_LOGGING_LEVEL = logging.INFO
 PATH_NAME = "%(pathname)s"
 FILE_NAME = "%(filename)s"
 
-def init_logger_custom(log_to_console: bool=True, log_to_file: bool=True,
+def init_logger(log_to_console: bool=True, log_to_file: bool=True,
                 base_logging_level: int=BASE_LOGGING_LEVEL, stream_logging_level: int=STREAM_LOGGING_LEVEL,
                 file_logging_level: int=FILE_LOGGING_LEVEL, display_full_path: bool=False, rewrite_log_file: bool=True,
                 display_init_message: bool=True):
     global logger
-
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(stream_logging_level)
-    stream_handler.setFormatter(CustomFormatter())
-
-    file_mode = "w" if rewrite_log_file else "a"
-    file_handler = logging.FileHandler(filename=f"{__package__}.log", mode=file_mode)
-    file_handler.setLevel(file_logging_level)
-
-    file_info = PATH_NAME if display_full_path else FILE_NAME
-    file_formatter = logging.Formatter(fmt=f"[%(asctime)s] %(levelname)s %(funcName)s ({file_info}:%(lineno)d): %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S")
-    file_handler.setFormatter(file_formatter)
 
     logger = logging.getLogger(__name__)
     logger.setLevel(base_logging_level)
@@ -118,12 +105,26 @@ def init_logger_custom(log_to_console: bool=True, log_to_file: bool=True,
     while logger.hasHandlers():
         logger.removeHandler(logger.handlers[0])
 
-    if log_to_file:
-        logger.addHandler(file_handler)
     if log_to_console:
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(stream_logging_level)
+        stream_handler.setFormatter(CustomFormatter())
+
         logger.addHandler(stream_handler)
+
+    if log_to_file:
+        file_mode = "w" if rewrite_log_file else "a"
+        file_handler = logging.FileHandler(filename=f"{__package__}.log", mode=file_mode)
+        file_handler.setLevel(file_logging_level)
+
+        file_info = PATH_NAME if display_full_path else FILE_NAME
+        file_formatter = logging.Formatter(fmt=f"[%(asctime)s] %(levelname)s %(funcName)s ({file_info}:%(lineno)d): %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S")
+        file_handler.setFormatter(file_formatter)
+
+        logger.addHandler(file_handler)
 
     if display_init_message:
         logger.internal("Initialized Logger!")
 
-init_logger_custom(display_init_message=False)
+init_logger(log_to_file=False, display_init_message=False)

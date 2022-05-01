@@ -42,7 +42,7 @@ def toggle_velocity(event):
         lg.logger.warning("Velocity has been updated")
 
 def main():
-    lg.init_logger_custom(log_to_file=False)
+    lg.init_logger(rewrite_log_file=False)
     window = Window(WINDOW_SIZE)
 
     circle = Circle(Vector2(20, 20), 20, Color.RED)
