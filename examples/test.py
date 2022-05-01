@@ -21,7 +21,7 @@ SAVE_FILE = os.path.abspath(os.path.join("examples", "save_data.json"))
 score = JsonSave.load(SAVE_FILE, "Score", 0)
 
 def quit_game():
-    lg.logger.error("Quit game!")
+    lg.logger.error("Quit game!", stack_info=True, stacklevel=1)
     pygame.quit()
     sys.exit()
 
@@ -32,7 +32,7 @@ def set_score(value):
 def increment_score(value=1):
     global score
     score += value
-    lg.logger.debug(f"Score: {score}", stack_info=True, stacklevel=1)
+    lg.logger.debug(f"Score: {score}")
 
 def toggle_velocity(event):
     global VELOCITY, current_velocity
@@ -41,7 +41,7 @@ def toggle_velocity(event):
         lg.logger.warning("Velocity has been updated")
 
 def main():
-    lg.init_logger(rewrite_log_file=False)
+    lg.init_logger(invert_colors=True)
     window = Window(WINDOW_SIZE)
 
     circle = Circle(Vector2(20, 20), 20, Color.RED)
