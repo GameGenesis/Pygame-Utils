@@ -9,15 +9,15 @@ Critical = 50: A serious error has occurred. The program itself may shut down or
 """
 
 
-def addLoggingLevel(levelName, levelNum, methodName=None):
+def add_logging_level(level_name, level_num, method_name=None):
     """
     Comprehensively adds a new logging level to the `logging` module and the
     currently configured logging class.
 
-    `levelName` becomes an attribute of the `logging` module with the value
-    `levelNum`. `methodName` becomes a convenience method for both `logging`
+    `level_name` becomes an attribute of the `logging` module with the value
+    `level_num`. `method_name` becomes a convenience method for both `logging`
     itself and the class returned by `logging.getLoggerClass()` (usually just
-    `logging.Logger`). If `methodName` is not specified, `levelName.lower()` is
+    `logging.Logger`). If `method_name` is not specified, `level_name.lower()` is
     used.
 
     To avoid accidental clobberings of existing attributes, this method will
@@ -26,7 +26,7 @@ def addLoggingLevel(levelName, levelNum, methodName=None):
 
     Example
     -------
-    >>> addLoggingLevel('TRACE', logging.DEBUG - 5)
+    >>> add_logging_level('TRACE', logging.DEBUG - 5)
     >>> logging.getLogger(__name__).setLevel("TRACE")
     >>> logging.getLogger(__name__).trace('that worked')
     >>> logging.trace('so did this')
@@ -34,26 +34,29 @@ def addLoggingLevel(levelName, levelNum, methodName=None):
     5
 
     """
-    if not methodName:
-        methodName = levelName.lower()
+    if not method_name:
+        method_name = level_name.lower()
 
-    if hasattr(logging, levelName):
-       raise AttributeError('{} already defined in logging module'.format(levelName))
-    if hasattr(logging, methodName):
-       raise AttributeError('{} already defined in logging module'.format(methodName))
-    if hasattr(logging.getLoggerClass(), methodName):
-       raise AttributeError('{} already defined in logger class'.format(methodName))
+    if hasattr(logging, level_name):
+       raise AttributeError(f"{level_name} already defined in logging module")
+    if hasattr(logging, method_name):
+       raise AttributeError(f"{method_name} already defined in logging module")
+    if hasattr(logging.getLoggerClass(), method_name):
+       raise AttributeError(f"{method_name} already defined in logger class")
 
     def logForLevel(self, message, *args, **kwargs):
-        if self.isEnabledFor(levelNum):
-            self._log(levelNum, message, args, **kwargs)
+        if self.isEnabledFor(level_num):
+            self._log(level_num, message, args, **kwargs)
     def logToRoot(message, *args, **kwargs):
-        logging.log(levelNum, message, *args, **kwargs)
+        logging.log(level_num, message, *args, **kwargs)
 
-    logging.addLevelName(levelNum, levelName)
-    setattr(logging, levelName, levelNum)
-    setattr(logging.getLoggerClass(), methodName, logForLevel)
-    setattr(logging, methodName, logToRoot)
+    logging.addLevelName(level_num, level_name)
+    setattr(logging, level_name, level_num)
+    setattr(logging.getLoggerClass(), method_name, logForLevel)
+    setattr(logging, method_name, logToRoot)
+
+
+add_logging_level("INTERNAL", logging.DEBUG - 5)
 
 
 class ColorFormatter(logging.Formatter):
@@ -73,7 +76,7 @@ class ColorFormatter(logging.Formatter):
     fmt_internal = "{0}[%(asctime)s] (%(filename)s): %(message)s{1}"
 
     FORMATS = {
-        logging.DEBUG - 5: fmt.format(green, bold, reset, green, reset),
+        logging.INTERNAL: fmt.format(green, bold, reset, green, reset),
         logging.DEBUG: fmt.format(grey, bold, reset, grey, reset),
         logging.INFO: fmt.format(grey, bold, reset, grey, reset),
         logging.WARNING: fmt.format(yellow, bold, reset, yellow, reset),
@@ -104,7 +107,7 @@ class ColorFormatterInverted(logging.Formatter):
     fmt_internal = "{0}[%(asctime)s] (%(filename)s): %(message)s{1}"
 
     FORMATS = {
-        logging.DEBUG - 5: fmt.format(green, bold, reset, green, reset),
+        logging.INTERNAL: fmt.format(green, bold, reset, green, reset),
         logging.DEBUG: fmt.format(grey, bold, reset, grey, reset),
         logging.INFO: fmt.format(grey, bold, reset, grey, reset),
         logging.WARNING: fmt.format(yellow, bold, reset, yellow, reset),
@@ -117,8 +120,6 @@ class ColorFormatterInverted(logging.Formatter):
         formatter = logging.Formatter(fmt=log_fmt, datefmt="%H:%M:%S")
         return formatter.format(record)
 
-
-addLoggingLevel("INTERNAL", logging.DEBUG - 5)
 
 BASE_LOGGING_LEVEL = logging.INTERNAL
 STREAM_LOGGING_LEVEL = logging.INTERNAL
