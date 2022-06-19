@@ -8,6 +8,7 @@ Error = 40: As it implies, an error has occurred. The software was unable to per
 Critical = 50: A serious error has occurred. The program itself may shut down or not be able to continue running properly.
 """
 
+# Source: https://stackoverflow.com/questions/2183233/how-to-add-a-custom-loglevel-to-pythons-logging-facility/35804945#35804945
 
 def add_logging_level(level_name, level_num, method_name=None):
     """
