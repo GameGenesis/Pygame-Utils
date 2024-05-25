@@ -1,8 +1,3 @@
-import os
-import sys
-import time
-
-from random import randint, choice
 import pygame
 
 from ui import Canvas

@@ -408,6 +408,71 @@ class Label(Graphic):
 
         self.text_rect = self.image.get_rect(**{self.anchor: self.position})
 
+class Centered_Multiline_Text(Graphic):
+    def __init__(self, text: str | Any="", color: pygame.Color | tuple[int, int, int]=(255, 255, 255),
+        font_name: str=None, font_size: int=28, position: Vector2=Vector2(0, 0), max_width: int=200,
+        parent: Panel=None) -> None:
+            super().__init__(parent)
+            self.font = pygame.font.SysFont(font_name, font_size)
+            self.text = str(text)
+            self.color = color
+            self.position = position
+            self.max_width = max_width
+            self._render()
+
+    def _render(self):
+        # first, split the text into words
+        words = self.text.split()
+
+        # now, construct lines out of these words
+        self.lines = []
+        while len(words) > 0:
+            # get as many words as will fit within allowed_width
+            line_words = []
+            while len(words) > 0:
+                line_words.append(words.pop(0))
+                fw, fh = self.font.size(' '.join(line_words + words[:1]))
+                if fw > self.max_width:
+                    break
+
+            # add a line consisting of those words
+            line = ' '.join(line_words)
+            self.lines.append(line)
+
+    def draw(self, surface: pygame.Surface):
+        # now we've split our text into lines that fit into the width, actually
+        # render them
+
+        # we'll render each line below the last, so we need to keep track of
+        # the culmative height of the lines we've rendered so far
+        y_offset = 0
+        for line in self.lines:
+            fw, fh = self.font.size(line)
+
+            self.image = self.font.render(line, True, self.color)
+            # Top-left of the font surface
+            self.text_rect = (self.position[0] - fw / 2, self.position[1] + y_offset)
+
+            surface.blit(self.image, self.text_rect)
+
+            y_offset += fh
+
+    # def blit_text(self, surface, pos, color=pygame.Color('black')):
+    #     words = [word.split(' ') for word in self.text.splitlines()]  # 2D array where each row is a list of words.
+    #     space = self.font.size(' ')[0]  # The width of a space.
+    #     max_width, max_height = surface.get_size()
+    #     x, y = pos
+    #     for line in words:
+    #         for word in line:
+    #             word_surface = self.font.render(word, 0, color)
+    #             word_width, word_height = word_surface.get_size()
+    #             if x + word_width >= max_width:
+    #                 x = pos[0]  # Reset the x.
+    #                 y += word_height  # Start on new row.
+    #             surface.blit(word_surface, (x, y))
+    #             x += word_width + space
+    #         x = pos[0]  # Reset the x.
+    #         y += word_height  # Start on new row.
 
 class Button(Graphic, Graphic_Event):
     def __init__(self, image: UiImage=None, on_click: Callable=None,
